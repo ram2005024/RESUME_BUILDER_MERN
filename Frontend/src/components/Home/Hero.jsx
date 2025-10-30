@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Hero = () => {
   const logos = [
@@ -11,6 +12,59 @@ const Hero = () => {
   return (
     <div id="home">
       <>
+        {/* Nav section */}
+        <nav className="z-50 flex items-center justify-between w-full py-4 px-6 md:px-16 lg:px-24 xl:px-40 text-sm">
+          <a href="https://prebuiltui.com">
+            <img src="/logo.svg" alt="logo" className="h-10 w-auto" />
+          </a>
+
+          <div className="hidden md:flex items-center gap-8 transition duration-500 text-slate-800">
+            <a href="#home" className="hover:text-indigo-600 transition">
+              Home
+            </a>
+            <a href="#features" className="hover:text-indigo-600 transition">
+              Features
+            </a>
+            <a
+              href="#testimonials"
+              className="hover:text-indigo-600 transition"
+            >
+              Testimonials
+            </a>
+            <a href="#cta" className="hover:text-indigo-600 transition">
+              Contact
+            </a>
+          </div>
+
+          <div className="flex gap-2">
+            <Link
+              to="/login?state=SignUp"
+              className="hidden md:block px-6 py-2 bg-green-500 hover:bg-green-700 font-semibold active:scale-95 transition-all rounded-full text-white"
+            >
+              Get started
+            </Link>
+            <Link
+              to="/login"
+              className="hidden md:block px-6 py-2 border active:scale-95 hover:bg-slate-50 transition-all rounded-full text-slate-700 hover:text-slate-900"
+            >
+              Login
+            </Link>
+          </div>
+
+          <button className="md:hidden active:scale-90 transition">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="26"
+              height="26"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="lucide lucide-menu"
+            >
+              <path d="M4 5h16M4 12h16M4 19h16" />
+            </svg>
+          </button>
+        </nav>
         <div className="min-h-screen pb-20">
           {/* Hero Section */}
           <div className="relative flex flex-col items-center justify-center text-sm px-4 md:px-16 lg:px-24 xl:px-40 text-black">
@@ -89,8 +143,8 @@ const Hero = () => {
 
             {/* CTA Buttons */}
             <div className="flex items-center gap-4 ">
-              <a
-                href="/"
+              <Link
+                to="/login?state=SignUp"
                 className="bg-green-500 hover:bg-green-600 text-white rounded-full px-9 h-12 m-1 ring-offset-2 ring-1 ring-indigo-400 flex items-center transition-colors"
               >
                 Get started
@@ -110,7 +164,7 @@ const Hero = () => {
                   <path d="M5 12h14"></path>
                   <path d="m12 5 7 7-7 7"></path>
                 </svg>
-              </a>
+              </Link>
               <button className="flex items-center gap-2 border border-slate-400 hover:bg-indigo-50 transition rounded-full px-7 h-12 text-slate-700">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
