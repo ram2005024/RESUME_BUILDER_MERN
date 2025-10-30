@@ -5,14 +5,20 @@ import {
   NotebookPen,
   Trash,
   PenIcon,
+  XIcon,
 } from "lucide-react";
 import { dummyResumeData } from "../assets/assets";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 const DashBoard = () => {
   const [allResumes, setAllResumes] = useState([]);
+  const [isCreateResume, setIsCreateResume] = useState(false);
+  const [isUploadResume, setIsUploadResume] = useState(false);
+  const [title, setTitle] = useState("");
   const loadResumes = async () => {
     setAllResumes(dummyResumeData);
   };
+  const navigate = useNavigate();
   useEffect(() => {
     loadResumes();
   }, []);
@@ -28,13 +34,20 @@ const DashBoard = () => {
     "#fff7ed",
     "#fef2f2",
   ];
+  const handleCreateResume = async (e) => {
+    e.preventDefault();
+    navigate("/app/build/resumeID");
+  };
   return (
-    <div className=" flex flex-col h-screen">
+    <div className=" flex flex-col h-screen ">
       <Nav />
       <div className=" bg-slate-50  grow flex ">
         <div className="sm:w-7xl mx-auto flex flex-col gap-8 py-10">
           <div className="flex  gap-6 px-4 py-4 w-screen group">
-            <button className="sm:w-[200px] h-48  bg-white flex rounded-lg border flex-col justify-center hover:shadow-lg items-center gap-3 hover:scale-105 transition-all border-dashed duration-200">
+            <button
+              onClick={() => setIsCreateResume(true)}
+              className="sm:w-[200px] h-48  bg-white flex rounded-lg border flex-col justify-center hover:shadow-lg items-center gap-3 hover:scale-105 transition-all border-dashed duration-200"
+            >
               <PlusIcon
                 size={40}
                 className="bg-gradient-to-tl from-indigo-500  to-indigo-200 text-white rounded-full"
@@ -47,7 +60,7 @@ const DashBoard = () => {
                 strokeWidth={1.5}
                 className="bg-gradient-to-bl from-purple-700  to-purple-300  text-white rounded-full"
               />
-              <p className="text-slate-500">Create Resume</p>
+              <p className="text-slate-500">Upload Resume</p>
             </button>
           </div>
           <hr className="text-slate-400 sm:w-100 w-auto mx-10 " />
@@ -102,6 +115,45 @@ const DashBoard = () => {
           </div>
         </div>
       </div>
+      {isCreateResume && (
+        <form
+          onClick={() => {
+            setIsCreateResume(false);
+            setTitle("");
+          }}
+          onSubmit={(e) => handleCreateResume(e)}
+          className="fixed inset-0 flex items-center justify-center  bg-black/70 backdrop-blur bg-opacity-50 z-100 h-full w-screen transition-all duration-300"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="sm:max-w-sm  w-auto flex flex-col gap-5 py-4 px-7 shadow-2xl  rounded-lg relative bg-white"
+          >
+            <p className="font-bold text-xl ">Create a resumee</p>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              className="w-full py-2 px-3 rounded-lg transition-color duration-200"
+              placeholder="Enter resume"
+            />
+            <button
+              type="submit"
+              className="w-full text-center bg-green-900 rounded-sm text-white font-2xl py-3"
+            >
+              Create Resume
+            </button>
+            <XIcon
+              onClick={() => {
+                setIsCreateResume(false);
+                setTitle("");
+              }}
+              size={20}
+              className="absolute top-5 right-5 text-zinc-500 cursor-pointer hover:scale-105 hover:text-red-400"
+            />
+          </div>
+        </form>
+      )}
     </div>
   );
 };
