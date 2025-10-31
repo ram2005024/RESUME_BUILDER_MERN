@@ -38,6 +38,12 @@ const DashBoard = () => {
     e.preventDefault();
     navigate("/app/build/resumeID");
   };
+  const handleUploadResume = async () => {
+    setTitle("");
+    setIsUploadResume("");
+
+    navigate("/app/build/resume123");
+  };
   return (
     <div className=" flex flex-col h-screen ">
       <Nav />
@@ -54,7 +60,10 @@ const DashBoard = () => {
               />
               <p className="text-slate-500">Create Resume</p>
             </button>
-            <button className="sm:w-[200px] h-48 bg-white hover:shadow-lg flex border-dashed border rounded-lg flex-col justify-center  items-center gap-3 hover:scale-105 transition-all duration-200">
+            <button
+              onClick={() => setIsUploadResume(true)}
+              className="sm:w-[200px] h-48 bg-white hover:shadow-lg flex border-dashed border rounded-lg flex-col justify-center  items-center gap-3 hover:scale-105 transition-all duration-200"
+            >
               <UploadCloud
                 size={40}
                 strokeWidth={1.5}
@@ -154,8 +163,66 @@ const DashBoard = () => {
           </div>
         </form>
       )}
+      {isUploadResume && (
+        <form
+          onClick={() => {
+            setIsUploadResume(false);
+            setTitle("");
+          }}
+          onSubmit={(e) => handleUploadResume(e)}
+          className="fixed inset-0 flex items-center justify-center  bg-black/70 backdrop-blur bg-opacity-50 z-100 h-full w-screen transition-all duration-300"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="sm:max-w-sm  w-auto flex flex-col gap-5 py-4 px-7 shadow-2xl  rounded-lg relative bg-white"
+          >
+            <p className="font-bold text-xl ">Upload a resumee</p>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              className="w-full py-2 px-3 rounded-lg transition-color duration-200"
+              placeholder="Enter resume title"
+            />
+            <p className="text-sm text-slate-600">Select resume file</p>
+            <div className="w-full flex flex-col items-center justify-center border border-dashed border-gray-400 py-18 ">
+              <UploadCloud size={40} className="text-grey stroke-1 mb-3" />
+              <label
+                className="  text-gray-400 cursor-pointer"
+                htmlFor="inputUpload"
+              >
+                Upload a resume
+              </label>
+              <input
+                type="file"
+                hidden
+                accept=".pdf"
+                required
+                file
+                id="inputUpload"
+                onClick={(e) => setAllResumes(e.target.files[0])}
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full text-center bg-green-900 rounded-sm text-white font-2xl py-3"
+            >
+              Upload Resume
+            </button>
+            <XIcon
+              onClick={() => {
+                setIsCreateResume(false);
+                setTitle("");
+              }}
+              size={20}
+              className="absolute top-5 right-5 text-zinc-500 cursor-pointer hover:scale-105 hover:text-red-400"
+            />
+          </div>
+        </form>
+      )}
+      ;
     </div>
   );
 };
-
 export default DashBoard;
