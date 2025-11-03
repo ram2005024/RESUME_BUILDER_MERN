@@ -4,7 +4,7 @@ const Nav = () => {
   const user = { name: "Shekhar" };
   const navigate = useNavigate();
   return (
-    <div className="w-screen border border-gray-200 shadow-sm mb-2">
+    <div className="w-screen   border border-gray-200">
       <nav className="w-full flex justify-between items-center py-4 px-2 max-w-7xl mx-auto">
         <img src="/logo.svg" alt="logo" onClick={() => navigate("/")} />
         <div className="flex gap-4 items-center">

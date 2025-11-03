@@ -13,10 +13,11 @@ import {
   SparkleIcon,
   User,
 } from "lucide-react";
+import PersonalInfo from "../components/PersonalInfo";
 
 const Build = () => {
   const [resume, setResume] = useState({
-    personalInfo: {},
+    personal_info: {},
     personalSummary: "",
     experience: [],
     skills: [],
@@ -29,6 +30,7 @@ const Build = () => {
     userId: "",
     title: "",
   });
+  const [removeBackground, setRemoveBackground] = useState(false);
   const sections = [
     { id: "personal", name: "Personal Info", icon: User },
     { id: "summary", name: "Summary", icon: FileText },
@@ -52,7 +54,7 @@ const Build = () => {
   }, []);
 
   return (
-    <div>
+    <div className="bg-zinc-100">
       <div className="max-w-7xl mx-auto flex flex-col  py-5">
         <div>
           <Link
@@ -108,6 +110,18 @@ const Build = () => {
                     <ChevronRight size={15} />
                   </button>
                 </div>
+              </div>
+              <hr className="text-gray-300 w-full" />
+              {/* For form filling */}
+              <div className="mt-4 w-full">
+                <PersonalInfo
+                  data={resume.personal_info}
+                  removeBackground={removeBackground}
+                  setRemoveBackground={setRemoveBackground}
+                  onChange={(data) =>
+                    setResume((prev) => ({ ...prev, personal_info: data }))
+                  }
+                />
               </div>
             </div>
 
