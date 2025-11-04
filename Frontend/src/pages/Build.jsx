@@ -3,7 +3,6 @@ import { Link, useParams } from "react-router-dom";
 import { dummyResumeData } from "../assets/assets";
 import {
   ArrowLeft,
-  ArrowRight,
   Briefcase,
   ChevronLeft,
   ChevronRight,
@@ -14,8 +13,11 @@ import {
   User,
 } from "lucide-react";
 import PersonalInfo from "../components/PersonalInfo";
+import Preview from "../components/Preview";
+import TemplateBox from "../components/TemplateBox";
 
 const Build = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const [resume, setResume] = useState({
     personal_info: {},
     personalSummary: "",
@@ -52,7 +54,32 @@ const Build = () => {
   useEffect(() => {
     loadExisting();
   }, []);
-
+  const templateOptions = [
+    {
+      field: "template",
+      id: "MinimalTemplate",
+      label:
+        "MinimalTemplate offers a clean, distraction-free layout that highlights your content with elegance. Perfect for resumes or portfolios that need clarity and impact.",
+    },
+    {
+      field: "template",
+      id: "MinimalImageTemplate",
+      label:
+        "MinimalImageTemplate pairs clean typography with subtle image integration, creating a balanced layout that feels modern yet understated. Ideal for resumes or profiles that need visual warmth without clutter",
+    },
+    {
+      field: "template",
+      id: "Modern",
+      label:
+        "ModernTemplate blends sleek design with bold structure, perfect for showcasing skills and achievements with clarity. Its dynamic layout and confident typography make every section stand out.",
+    },
+    {
+      field: "template",
+      id: "Classic",
+      label:
+        "ClassicTemplate delivers timeless elegance with structured layouts and refined typography. Ideal for formal resumes or documents that value tradition and clarity.",
+    },
+  ];
   return (
     <div className="bg-zinc-100">
       <div className="max-w-7xl mx-auto flex flex-col  py-5">
@@ -66,10 +93,10 @@ const Build = () => {
           </Link>
         </div>
 
-        <div className="grid lg:grid-cols-12 gap-8 ">
+        <div className="grid lg:grid-cols-12 gap-10 ">
           <div className="lg:col-span-5  rounded-lg overflow-hidden ">
             {/* Left entry point */}
-            <div className="bg-white border relative border-gray-400 p-6 pt-1 rounded-lg shadow-sm">
+            <div className="bg-white border relative border-slate-300 p-6 pt-1 rounded-lg shadow-sm">
               {/* For progress bar */}
               <hr className="absolute top-0 left-0 border-3 border-gray-400 rounded-lg w-full" />
               <hr
@@ -80,7 +107,17 @@ const Build = () => {
               />
               <div className="flex justify-between items-center w-full mt-4">
                 {/* Template desiging container */}
-                <div></div>
+
+                <div>
+                  <TemplateBox
+                    isOpen={isOpen}
+                    setIsOpen={setIsOpen}
+                    templateOptions={templateOptions}
+                    onChange={(data) => {
+                      setResume((prev) => ({ ...prev, data }));
+                    }}
+                  />
+                </div>
                 {/* Controllers for resumes */}
                 <div className="flex items-center gap-2">
                   {activeSectionIndex > 0 && (
@@ -124,8 +161,16 @@ const Build = () => {
                 />
               </div>
             </div>
-
-            {/* Right view point */}
+          </div>
+          {/* Right view point */}
+          <div className="lg:col-span-7 max-lg:mt-5">
+            <div>
+              <Preview
+                data={resume}
+                template={resume.template}
+                accent={resume.accent}
+              />
+            </div>
           </div>
         </div>
       </div>
