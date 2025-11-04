@@ -24,8 +24,8 @@ const Build = () => {
     experience: [],
     skills: [],
     projects: [],
-    template: "classic",
-    accent: "#A855F7",
+    template: "ClassicTemplate",
+    accent_color: "#818cf8",
     public: false,
     education: [],
     _id: "",
@@ -57,27 +57,31 @@ const Build = () => {
   const templateOptions = [
     {
       field: "template",
-      id: "MinimalTemplate",
+      key: "Classic",
+      id: "classic",
+      label:
+        "ClassicTemplate delivers timeless elegance with structured layouts and refined typography. Ideal for formal resumes or documents that value tradition and clarity.",
+    },
+    {
+      field: "template",
+      key: "Minimal",
+      id: "minimal",
       label:
         "MinimalTemplate offers a clean, distraction-free layout that highlights your content with elegance. Perfect for resumes or portfolios that need clarity and impact.",
     },
     {
       field: "template",
-      id: "MinimalImageTemplate",
+      key: "Minimal image",
+      id: "minimalImage",
       label:
         "MinimalImageTemplate pairs clean typography with subtle image integration, creating a balanced layout that feels modern yet understated. Ideal for resumes or profiles that need visual warmth without clutter",
     },
     {
       field: "template",
-      id: "Modern",
+      key: "Modern",
+      id: "modern",
       label:
         "ModernTemplate blends sleek design with bold structure, perfect for showcasing skills and achievements with clarity. Its dynamic layout and confident typography make every section stand out.",
-    },
-    {
-      field: "template",
-      id: "Classic",
-      label:
-        "ClassicTemplate delivers timeless elegance with structured layouts and refined typography. Ideal for formal resumes or documents that value tradition and clarity.",
     },
   ];
   return (
@@ -105,7 +109,7 @@ const Build = () => {
                   width: `${(activeSectionIndex / sections.length) * 120}%`,
                 }}
               />
-              <div className="flex justify-between items-center w-full mt-4">
+              <div className="flex justify-between items-center w-full mt-4 ">
                 {/* Template desiging container */}
 
                 <div>
@@ -114,7 +118,7 @@ const Build = () => {
                     setIsOpen={setIsOpen}
                     templateOptions={templateOptions}
                     onChange={(data) => {
-                      setResume((prev) => ({ ...prev, data }));
+                      setResume((prev) => ({ ...prev, template: data }));
                     }}
                   />
                 </div>
@@ -148,7 +152,7 @@ const Build = () => {
                   </button>
                 </div>
               </div>
-              <hr className="text-gray-300 w-full" />
+              <hr className="text-gray-300 w-full mt-2" />
               {/* For form filling */}
               <div className="mt-4 w-full">
                 <PersonalInfo
@@ -168,7 +172,7 @@ const Build = () => {
               <Preview
                 data={resume}
                 template={resume.template}
-                accent={resume.accent}
+                accent={resume.accent_color}
               />
             </div>
           </div>

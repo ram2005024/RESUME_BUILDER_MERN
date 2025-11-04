@@ -2,7 +2,9 @@ import {
   BriefcaseBusiness,
   Globe,
   LinkIcon,
+  LocateIcon,
   MailIcon,
+  MapIcon,
   PhoneCall,
   User,
   User2Icon,
@@ -38,6 +40,12 @@ const PersonalInfo = ({
       label: "Phone number",
       key: "phone",
       logo: PhoneCall,
+      type: "text",
+    },
+    {
+      label: "Location",
+      key: "location",
+      logo: LocateIcon,
       type: "text",
     },
     {

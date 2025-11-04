@@ -5,18 +5,19 @@ import MinimalImageTemplate from "./templates/MinimalImageTemplate";
 import ModernTemplate from "./templates/ModernTemplate";
 const Preview = ({ data, accent, template, classes = "" }) => {
   const templateSelector = () => {
+    console.log(template);
     switch (template) {
-      case "MinimalTemplate":
-        return <MinimalTemplate data={data} accent={accent} />;
+      case "minimal":
+        return <MinimalTemplate data={data} accentColor={accent} />;
 
-      case "MinimalImageTemplate":
-        return <MinimalImageTemplate data={data} accent={accent} />;
+      case "minimalImage":
+        return <MinimalImageTemplate data={data} accentColor={accent} />;
 
-      case "ModernTemplate":
-        return <ModernTemplate data={data} accent={accent} />;
+      case "modern":
+        return <ModernTemplate data={data} accentColor={accent} />;
 
       default:
-        return <ClassicTemplate data={data} accent={accent} />;
+        return <ClassicTemplate data={data} accentColor={accent} />;
     }
   };
   return (
