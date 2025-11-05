@@ -4,7 +4,7 @@ import Nav from "../components/DashBoard/Nav";
 
 const Layout = () => {
   return (
-    <div>
+    <div className="flex flex-col h-screen">
       <Nav />
       <Outlet />
     </div>

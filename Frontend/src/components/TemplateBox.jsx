@@ -4,10 +4,10 @@ import React, { useState } from "react";
 const TemplateBox = ({ setIsOpen, isOpen, templateOptions, onChange }) => {
   const [isCheckedIndex, setIsChecked] = useState(0);
   return (
-    <div className="flex gap-2 relative">
+    <div className="relative">
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className="p-3 flex items-center justify-center cursor-pointer  bg-indigo-200 rounded-lg gap-1.5 hover:border hover:border-gray-200 hover:ring-1 hover:ring-slate-400 hover:bg-gradient-to-r from-indigo-100 to-indigo-200"
+        className="p-2 flex items-center justify-center cursor-pointer  bg-indigo-200 rounded-lg gap-1.5 hover:border hover:border-gray-200 hover:ring-1 hover:ring-slate-400 hover:bg-gradient-to-r from-indigo-100 to-indigo-200 transition-all duration-100"
       >
         <LayoutTemplate className="size-4 text-indigo-500" />
         <span className="text-indigo-500">Template</span>
@@ -15,7 +15,7 @@ const TemplateBox = ({ setIsOpen, isOpen, templateOptions, onChange }) => {
       {/* Template selecting container */}
       {isOpen && (
         <div
-          className="p-4 flex flex-col gap-3 absolute top-15 left-0 z-50 overflow-y-visible w-96 border border-gray-100 shadow-lg bg-white"
+          className="p-4 flex flex-col  gap-3 absolute top-15 left-0 z-50  w-96 h-auto border border-gray-100 shadow-lg bg-white"
           onClick={(e) => e.stopPropagation()}
         >
           {templateOptions.map((items, index) => {

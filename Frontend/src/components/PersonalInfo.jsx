@@ -45,7 +45,7 @@ const PersonalInfo = ({
     {
       label: "Location",
       key: "location",
-      logo: LocateIcon,
+      logo: LocateIcon  ,
       type: "text",
     },
     {

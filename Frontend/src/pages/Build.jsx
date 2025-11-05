@@ -15,12 +15,14 @@ import {
 import PersonalInfo from "../components/PersonalInfo";
 import Preview from "../components/Preview";
 import TemplateBox from "../components/TemplateBox";
+import AssetContainer from "../components/AssetContainer";
+import PersonalSummary from "../components/PersonalSummary";
 
 const Build = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [resume, setResume] = useState({
     personal_info: {},
-    personalSummary: "",
+    professional_summary: "",
     experience: [],
     skills: [],
     projects: [],
@@ -85,8 +87,8 @@ const Build = () => {
     },
   ];
   return (
-    <div className="bg-zinc-100">
-      <div className="max-w-7xl mx-auto flex flex-col  py-5">
+    <div className="flex-1 bg-zinc-100">
+      <div className="max-w-7xl mx-auto flex flex-col  py-5 relative">
         <div>
           <Link
             to="/app"
@@ -98,9 +100,9 @@ const Build = () => {
         </div>
 
         <div className="grid lg:grid-cols-12 gap-10 ">
-          <div className="lg:col-span-5  rounded-lg overflow-hidden ">
+          <div className="lg:col-span-5  rounded-lg overflow-y-visible">
             {/* Left entry point */}
-            <div className="bg-white border relative border-slate-300 p-6 pt-1 rounded-lg shadow-sm">
+            <div className="bg-white border relative border-slate-300 p-6 pt-1 rounded-lg shadow-sm ">
               {/* For progress bar */}
               <hr className="absolute top-0 left-0 border-3 border-gray-400 rounded-lg w-full" />
               <hr
@@ -112,13 +114,18 @@ const Build = () => {
               <div className="flex justify-between items-center w-full mt-4 ">
                 {/* Template desiging container */}
 
-                <div>
+                <div className="flex gap-3">
                   <TemplateBox
                     isOpen={isOpen}
                     setIsOpen={setIsOpen}
                     templateOptions={templateOptions}
                     onChange={(data) => {
                       setResume((prev) => ({ ...prev, template: data }));
+                    }}
+                  />
+                  <AssetContainer
+                    onChange={(data) => {
+                      setResume((prev) => ({ ...prev, accent_color: data }));
                     }}
                   />
                 </div>
@@ -155,14 +162,28 @@ const Build = () => {
               <hr className="text-gray-300 w-full mt-2" />
               {/* For form filling */}
               <div className="mt-4 w-full">
-                <PersonalInfo
-                  data={resume.personal_info}
-                  removeBackground={removeBackground}
-                  setRemoveBackground={setRemoveBackground}
-                  onChange={(data) =>
-                    setResume((prev) => ({ ...prev, personal_info: data }))
-                  }
-                />
+                {activeSection.id === "personal" && (
+                  <PersonalInfo
+                    data={resume.personal_info}
+                    removeBackground={removeBackground}
+                    setRemoveBackground={setRemoveBackground}
+                    onChange={(data) =>
+                      setResume((prev) => ({ ...prev, personal_info: data }))
+                    }
+                  />
+                )}
+                {activeSection.id === "summary" && (
+                  <PersonalSummary
+                    data={resume.professional_summary}
+                    setResume={setResume}
+                    onChange={(data) =>
+                      setResume((prev) => ({
+                        ...prev,
+                        professional_summary: data,
+                      }))
+                    }
+                  />
+                )}
               </div>
             </div>
           </div>
