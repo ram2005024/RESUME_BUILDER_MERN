@@ -17,6 +17,7 @@ import Preview from "../components/Preview";
 import TemplateBox from "../components/TemplateBox";
 import AssetContainer from "../components/AssetContainer";
 import PersonalSummary from "../components/PersonalSummary";
+import ExperienceContainer from "../components/ExperienceContainer";
 
 const Build = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -181,6 +182,25 @@ const Build = () => {
                         ...prev,
                         professional_summary: data,
                       }))
+                    }
+                  />
+                )}
+                {activeSection.id === "experience" && (
+                  <ExperienceContainer
+                    data={resume.experience}
+                    setResume={setResume}
+                    onChange={(data, index) =>
+                      setResume((prev) => {
+                        const updatedExperience = [...prev.experience];
+                        updatedExperience[index] = {
+                          ...updatedExperience[index],
+                          ...data,
+                        };
+                        return {
+                          ...prev,
+                          experience: updatedExperience,
+                        };
+                      })
                     }
                   />
                 )}
