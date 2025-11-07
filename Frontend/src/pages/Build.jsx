@@ -18,6 +18,9 @@ import TemplateBox from "../components/TemplateBox";
 import AssetContainer from "../components/AssetContainer";
 import PersonalSummary from "../components/PersonalSummary";
 import ExperienceContainer from "../components/ExperienceContainer";
+import ProjectContainer from "../components/ProjectContainer";
+import EducationContainer from "../components/EducationContainer";
+import SkillsContainer from "../components/SkillsContainer";
 
 const Build = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,7 +29,7 @@ const Build = () => {
     professional_summary: "",
     experience: [],
     skills: [],
-    projects: [],
+    project: [],
     template: "ClassicTemplate",
     accent_color: "#818cf8",
     public: false,
@@ -40,9 +43,9 @@ const Build = () => {
     { id: "personal", name: "Personal Info", icon: User },
     { id: "summary", name: "Summary", icon: FileText },
     { id: "experience", name: "Experience", icon: Briefcase },
+    { id: "projects", name: "Projects Info", icon: FolderIcon },
     { id: "education", name: "Education Info", icon: GraduationCap },
     { id: "skills", name: "Skills Info", icon: SparkleIcon },
-    { id: "projects", name: "Projects Info", icon: FolderIcon },
   ];
   const [activeSectionIndex, setActiveSectionIndex] = useState(0);
   const { id } = useParams();
@@ -203,6 +206,47 @@ const Build = () => {
                       })
                     }
                   />
+                )}
+                {activeSection.id === "projects" && (
+                  <ProjectContainer
+                    data={resume.project}
+                    setResume={setResume}
+                    onChange={(data, index) =>
+                      setResume((prev) => {
+                        const updatedProject = [...prev.project];
+                        updatedProject[index] = {
+                          ...updatedProject[index],
+                          ...data,
+                        };
+                        return {
+                          ...prev,
+                          project: updatedProject,
+                        };
+                      })
+                    }
+                  />
+                )}
+                {activeSection.id === "education" && (
+                  <EducationContainer
+                    data={resume.education}
+                    setResume={setResume}
+                    onChange={(data, index) =>
+                      setResume((prev) => {
+                        const updatedEducation = [...prev.education];
+                        updatedEducation[index] = {
+                          ...updatedEducation[index],
+                          ...data,
+                        };
+                        return {
+                          ...prev,
+                          education: updatedEducation,
+                        };
+                      })
+                    }
+                  />
+                )}
+                {activeSection.id === "skills" && (
+                  <SkillsContainer data={resume.skills} setResume={setResume} />
                 )}
               </div>
             </div>
