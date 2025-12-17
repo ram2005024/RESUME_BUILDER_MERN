@@ -101,7 +101,7 @@ const DashBoard = () => {
               const bgColorCode = color[index % color.length];
               return (
                 <button
-                  className="sm:w-[200px] h-48 flex justify-center items-center rounded-lg relative group hover:scale-105 transition-all duration-200"
+                  className="sm:w-[200px] h-48 inline-flex justify-center items-center rounded-lg relative group hover:scale-105 transition-all duration-200"
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(`/app/build/${items._id}`);
