@@ -1,6 +1,8 @@
 import React from "react";
 import { Stars } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 const Contact = () => {
+  const navigate = useNavigate();
   return (
     <div className="flex justify-center items-center mb-78" id="cte">
       <style>{`
@@ -20,7 +22,10 @@ const Contact = () => {
           you can build standout resumes fast, without starting from scratch.
         </p>
         <div className="flex gap-2">
-          <button className="px-8 py-2.5 mt-4 text-sm rounded-lg bg-green-600 hover:scale-105 transition duration-300 text-white">
+          <button
+            onClick={() => navigate("/login")}
+            className="px-8 py-2.5 mt-4 text-sm rounded-lg bg-green-600 hover:scale-105 transition duration-300 text-white"
+          >
             Get Started
           </button>
           <button className="flex items-center gap-2 px-8 py-2.5 mt-4 text-sm hover:scale-105 transition duration-300">

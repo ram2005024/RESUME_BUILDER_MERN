@@ -111,48 +111,48 @@ const DashBoard = () => {
                   }}
                   key={index}
                 >
-                  <div key={index} className="  flex flex-col gap-2">
-                    <div className="flex flex-col gap-2 py-2 justify-center items-center">
-                      <NotebookPen
-                        size={20}
-                        className="text-zinc-700 group-hover:text-slate-800"
-                      />
-                      <p className="group-hover:text-purple-500 text-indigo-800">
-                        {items.title}
-                      </p>
-                    </div>
+                  <div
+                    key={index}
+                    className="flex flex-col gap-2 py-2 justify-center items-center"
+                  >
+                    <NotebookPen
+                      size={20}
+                      className="text-zinc-700 group-hover:text-slate-800"
+                    />
+                    <p className="group-hover:text-purple-500 text-indigo-800">
+                      {items.title}
+                    </p>
                   </div>
+
                   <p className="text-gray-400 opacity-80 absolute bottom-1  text-[12px] text-center font-extralight">
                     Updated on {new Date(items.updatedAt).toLocaleDateString()}
                   </p>
-                  <div className="flex gap-2 absolute opacity-0 top-3 right-4 group-hover:opacity-100  ">
-                    <div
-                      className="flex gap-2"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Trash
-                        size={20}
-                        className="rounded-lg shadow-sm group-hover:scale-110 transition-all duration-300"
-                        onClick={() => handleDelete(items._id)}
-                        style={{
-                          color: "purple",
-                          background: bgColorCode,
-                        }}
-                      />
-                      <PenIcon
-                        onClick={() => {
-                          setIsEditResume(true);
-                          setTitle(items.title);
-                          setResumeID(items._id);
-                        }}
-                        size={20}
-                        className="rounded-lg shadow-sm  group-hover:scale-110  transition-all duration-300"
-                        style={{
-                          color: "purple",
-                          background: bgColorCode,
-                        }}
-                      />
-                    </div>
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex gap-2 absolute opacity-0 top-3 right-4 group-hover:opacity-100  "
+                  >
+                    <Trash
+                      size={20}
+                      className="rounded-lg shadow-sm group-hover:scale-110 transition-all duration-300"
+                      onClick={() => handleDelete(items._id)}
+                      style={{
+                        color: "purple",
+                        background: bgColorCode,
+                      }}
+                    />
+                    <PenIcon
+                      onClick={() => {
+                        setIsEditResume(true);
+                        setTitle(items.title);
+                        setResumeID(items._id);
+                      }}
+                      size={20}
+                      className="rounded-lg shadow-sm  group-hover:scale-110  transition-all duration-300"
+                      style={{
+                        color: "purple",
+                        background: bgColorCode,
+                      }}
+                    />
                   </div>
                 </button>
               );

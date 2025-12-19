@@ -6,6 +6,8 @@ import DashBoard from "./pages/DashBoard.jsx";
 import Build from "./pages/Build.jsx";
 import View from "./pages/View.jsx";
 import Login from "./pages/login.jsx";
+import DemoContent from "./pages/FooterPages/Dummy.jsx";
+
 const App = () => {
   const route = createBrowserRouter([
     {
@@ -27,12 +29,16 @@ const App = () => {
       ],
     },
     {
-      path: "/view/:id",
+      path: "/view/:resumeId",
       element: <View />,
     },
     {
       path: "/login",
       element: <Login />,
+    },
+    {
+      path: "/demo",
+      element: <DemoContent />,
     },
   ]);
   return (

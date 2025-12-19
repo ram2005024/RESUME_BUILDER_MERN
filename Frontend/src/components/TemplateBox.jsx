@@ -14,10 +14,7 @@ const TemplateBox = ({ setIsOpen, isOpen, templateOptions, onChange }) => {
       </div>
       {/* Template selecting container */}
       {isOpen && (
-        <div
-          className="p-4 flex flex-col  gap-3 absolute top-15 left-0 z-50  w-96 h-auto border border-gray-100 shadow-lg bg-white"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="p-4 flex flex-col  gap-3 rounded-lg absolute top-15 left-0 z-50  w-96 h-auto border border-gray-100 shadow-lg bg-white">
           {templateOptions.map((items, index) => {
             const isSelected = index === isCheckedIndex;
             return (

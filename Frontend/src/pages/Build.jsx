@@ -6,9 +6,13 @@ import {
   Briefcase,
   ChevronLeft,
   ChevronRight,
+  Download,
+  Eye,
+  EyeOffIcon,
   FileText,
   FolderIcon,
   GraduationCap,
+  Share,
   SparkleIcon,
   User,
 } from "lucide-react";
@@ -90,6 +94,20 @@ const Build = () => {
         "ModernTemplate blends sleek design with bold structure, perfect for showcasing skills and achievements with clarity. Its dynamic layout and confident typography make every section stand out.",
     },
   ];
+
+  const handleVisibility = async () => {
+    setResume({ ...resume, public: !resume.public });
+  };
+  const handleResumeShare = async () => {
+    const frontendURL = window.location.href.split(`/app/`)[0];
+    const resumeURL = frontendURL + "/view/" + id;
+    if (navigator.share) {
+      navigator.share({ url: resumeURL, text: "My resume" });
+    } else alert("Your browser doesn't support share option.");
+  };
+  const handleDownloadResume = async () => {
+    window.print();
+  };
   return (
     <div className="flex-1 bg-zinc-100">
       <div className="max-w-7xl mx-auto flex flex-col  py-5 relative">
@@ -103,14 +121,14 @@ const Build = () => {
           </Link>
         </div>
 
-        <div className="grid lg:grid-cols-12 gap-10 ">
-          <div className="lg:col-span-5  rounded-lg overflow-y-visible">
+        <div className="  grid lg:grid-cols-12 gap-10 ">
+          <div className="lg:col-span-5 print:hidden  rounded-lg overflow-y-visible">
             {/* Left entry point */}
             <div className="bg-white border relative border-slate-300 p-6 pt-1 rounded-lg shadow-sm ">
               {/* For progress bar */}
               <hr className="absolute top-0 left-0 border-3 border-gray-400 rounded-lg w-full" />
               <hr
-                className="absolute top-0 left-0 opacity-50 border-3 rounded-lg border-gray-700 transition-all duration-300"
+                className="absolute top-0 left-0 opacity-50 border-3 rounded-lg border-gray-900 transition-all duration-300"
                 style={{
                   width: `${(activeSectionIndex / sections.length) * 120}%`,
                 }}
@@ -121,6 +139,8 @@ const Build = () => {
                 <div className="flex gap-3">
                   <TemplateBox
                     isOpen={isOpen}
+                    setResume={setResume}
+                    resume={resume}
                     setIsOpen={setIsOpen}
                     templateOptions={templateOptions}
                     onChange={(data) => {
@@ -252,8 +272,44 @@ const Build = () => {
             </div>
           </div>
           {/* Right view point */}
-          <div className="lg:col-span-7 max-lg:mt-5">
-            <div>
+          <div className="lg:col-span-7 max-lg:mt-5  ">
+            <div className="relative w-full">
+              <div className="flex gap-3 absolute bottom-3 right-0 mr-5 sm:mr-0">
+                {resume.public && (
+                  <button
+                    onClick={() => handleResumeShare()}
+                    className="px-3 py-2.5 rounded-sm  ring-green-600 hover:ring text-indigo-600 bg-gradient-to-br from-indigo-100 to-indigo-200 inline-flex items-center gap-1.5 transition-colors duration-200"
+                  >
+                    <Share size={12} />
+                    <span className="text-xs">Share</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => handleVisibility()}
+                  className="px-3 py-2.5 rounded-sm text-xs ring-indigo-400 hover:ring text-indigo-600 bg-gradient-to-br from-green-100 to-green-200 inline-flex items-center gap-1.5 transition-colors duration-200"
+                >
+                  {resume.public ? (
+                    <>
+                      <Eye size={12} />
+                      <span>Public</span>
+                    </>
+                  ) : (
+                    <>
+                      <EyeOffIcon size={12} />
+                      <span>Private</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => handleDownloadResume()}
+                  className="px-4 py-2.5 rounded-sm text-xs  ring-green-400 hover:ring text-green-900 bg-gradient-to-br from-green-200 to-gray-200 inline-flex items-center gap-1.5 transition-colors duration-200"
+                >
+                  <Download size={12} />
+                  <span>Download</span>
+                </button>
+              </div>
+            </div>
+            <div id="resume-preview">
               <Preview
                 data={resume}
                 template={resume.template}

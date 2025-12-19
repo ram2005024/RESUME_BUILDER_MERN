@@ -14,7 +14,7 @@ const Hero = () => {
       <>
         {/* Nav section */}
         <nav className="z-50 flex items-center justify-between w-full py-4 px-6 md:px-16 lg:px-24 xl:px-40 text-sm">
-          <a href="https://prebuiltui.com">
+          <a href="/">
             <img src="/logo.svg" alt="logo" className="h-10 w-auto" />
           </a>
 
@@ -31,7 +31,7 @@ const Hero = () => {
             >
               Testimonials
             </a>
-            <a href="#cta" className="hover:text-indigo-600 transition">
+            <a href="#cte" className="hover:text-indigo-600 transition">
               Contact
             </a>
           </div>
