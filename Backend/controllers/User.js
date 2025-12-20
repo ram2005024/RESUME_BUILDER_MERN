@@ -1,0 +1,119 @@
+import { prisma } from "../config/dbConfig.js";
+
+import { comparePwd, createUser, generateToken } from "../libs/DBMethods.js";
+//---------------registerController-------------
+export const registerController = async (req, res) => {
+  const { username, email, password } = req.body;
+  if (!username || !email || !password)
+    return res.json({ message: "All fields are required", status: false });
+
+  try {
+    //Checking if user exists or not
+    const userExist = await prisma.user.findUnique({
+      where: { email },
+    });
+    if (userExist)
+      return res.json({ message: "User already exists.", success: false });
+    //if user doesnot exist create a database
+    const user = await createUser({ name: username, email, password });
+    const token = generateToken(user.id, user.name);
+    user.password = undefined;
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production" ? true : false,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    return res.json({
+      message: "User registered successfully",
+      success: true,
+      user,
+      token,
+    });
+  } catch (error) {
+    return res.json({ message: "Error to register user", success: false });
+    console.log("Error: ", error.message);
+  }
+};
+//------------------------------ login controller-----------------------
+export const loginController = async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password)
+    return res.json({ success: false, message: "ALL fields are required" });
+  const userExist = await prisma.user.findUnique({ where: { email } });
+  if (!userExist)
+    return res
+      .status(401)
+      .json({ message: "User doesn't exist with this email.", success: false });
+  if (!(await comparePwd(password, userExist.password)))
+    return res
+      .status(401)
+      .json({ message: "Invalid credentials", success: false });
+  const token = generateToken(userExist.id);
+  userExist.password = undefined;
+  return res.status(200).json({
+    message: "Login successfull",
+    success: true,
+    token,
+    user: userExist,
+  });
+};
+//-----------Getting userInfo by id------------------
+export const getUserController = async (req, res) => {
+  const userID = req.userID;
+  const userName = req.userName;
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userID } });
+    if (!user) return res.json({ message: "User not found", success: false });
+    user.password = undefined;
+    return res.status(200).json({ userID, userName, success: true });
+  } catch (error) {
+    console.log(error.message);
+    return res.json({ success: false, message: error.message });
+  }
+};
+//---------------Getting userResume by id------------------
+export const getResumeController = async (req, res) => {
+  const userID = req.userID;
+  try {
+    const resume = await prisma.resume.findUnique({
+      where: { userID },
+      include: { education: true, experience: true, project: true },
+    });
+    if (!resume) {
+      return res.json({
+        resume: {
+          title: "Untitled resume",
+          public: false,
+          template: "classic",
+          accent_color: "3B82F6",
+          professional_summary: "",
+          personal_info: {},
+          skills: [],
+          education: [],
+          experience: [],
+          project: [],
+        },
+        success: true,
+        message: "Resume fetched (empty)",
+      });
+    }
+    return res.json({ resume, success: true, message: "Resume fetched" });
+  } catch (error) {
+    return res.json({ message: error.message });
+  }
+};
+//-------------------Logout controller-----------------
+export const logoutController = async (req, res) => {
+  try {
+    res.clearCookie("token", {
+      secure: process.env.NODE_ENV === "production" ? true : false,
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    return res.json({ success: true, message: "Logout successfull" });
+  } catch (error) {
+    return res.json({ message: error.message });
+  }
+};

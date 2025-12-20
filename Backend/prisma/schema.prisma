@@ -1,0 +1,63 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model User{
+  id String @id @default(uuid())
+  name String? 
+  email String @unique
+  password String?
+  resumes Resume[]
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+model Resume{
+  id String @id @default(uuid())
+  userID String 
+  user User @relation(fields: [userID], references: [id],onDelete: Cascade)
+  title String? @default("Untitled resume")
+  public Boolean @default(false)
+  template String? @default("classic")
+  accent_color String? @default("3B82F6")
+  professional_summary String? @default("")
+  personal_info Json?
+  experience Experience[]
+  project Project[]
+  education Education[]
+    created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+model Experience{
+ id String @id @default(uuid())
+  resumeID String
+  resume Resume @relation(fields: [resumeID],references: [id])
+  company String?
+  position String?
+  start_date String?
+  end_date String?
+  description String?
+  is_current Boolean?
+}
+model Project{
+ id String @id @default(uuid())
+  resumeID String
+  resume Resume @relation(fields: [resumeID],references: [id])
+  name String?
+  type String?
+  description String?
+}
+model Education{
+  id String @id @default(uuid())
+  resumeID String
+  resume Resume @relation(fields: [resumeID],references: [id])
+  institution String?
+  degree String?
+  field String?
+  graduation_date String?
+  gpa String?
+}
