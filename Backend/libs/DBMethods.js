@@ -5,7 +5,7 @@ export const createUser = async (data) => {
   data.password = await bcrypt.hash(data.password, 10);
   return prisma.user.create({ data });
 };
-export const comparePwd = async (plainPwd, hashedPwd) => {
+export const compareHash = async (plainPwd, hashedPwd) => {
   return await bcrypt.compare(plainPwd, hashedPwd);
 };
 export const generateToken = (id, name) => {

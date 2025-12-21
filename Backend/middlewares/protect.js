@@ -12,6 +12,8 @@ export const protectUserAuth = async (req, res, next) => {
     req.userName = decodedToken.userName;
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Invlaid token", sucess: false });
+    return res
+      .status(401)
+      .json({ message: "Please login first", sucess: false });
   }
 };

@@ -12,6 +12,8 @@ model User{
   name String? 
   email String @unique
   password String?
+  otp String?
+  otpExpires DateTime?
   resumes Resume[]
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
