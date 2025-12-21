@@ -2,9 +2,11 @@ import axios from "axios";
 
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { userContext } from "../../context/UserContext.jsx";
 const Nav = () => {
   const navigate = useNavigate();
+  const { setAllResumes } = useContext(userContext);
   const [username, setUserName] = useState("user");
   useEffect(() => {
     const fetchUser = async () => {
@@ -31,6 +33,7 @@ const Nav = () => {
     );
     if (!res.data.success) return toast.error(res.data.message);
     navigate("/login");
+    setAllResumes([]);
     return toast.success(res.data.message);
   };
 

@@ -358,7 +358,7 @@ const Login = () => {
           {/* Main Action Button */}
           <button
             className="w-full bg-black text-white py-4 rounded-xl font-bold text-sm mt-4 hover:bg-gray-800 transition-colors"
-            onClick={handleSubmit()}
+            onClick={(e) => handleSubmit(e)}
           >
             {state === "login" && "Login"}
             {state === "register" && "Sign Up"}

@@ -15,7 +15,6 @@ userRoute.post("/register", registerController);
 userRoute.post("/login", loginController);
 userRoute.get("/logout", logoutController);
 userRoute.get("/data", protectUserAuth, getUserController);
-userRoute.get("/resume", protectUserAuth, getResumeController);
 userRoute.post("/forgot", forgotPass);
 userRoute.post("/verify", verifyOTP);
 userRoute.post("/changePass", changePass);

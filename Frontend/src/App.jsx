@@ -8,6 +8,7 @@ import Login from "./pages/login.jsx";
 import Protected from "./middlewares/Protected.jsx";
 import Public from "./middlewares/Public.jsx";
 import DemoContent from "./pages/FooterPages/Dummy.jsx";
+import { UserProvider } from "./context/UserContext.jsx";
 
 const App = () => {
   const route = createBrowserRouter([
@@ -15,16 +16,18 @@ const App = () => {
       path: "/",
       element: (
         <Public>
-          <Home />,
+          <Home />
         </Public>
       ),
     },
     {
       path: "/app",
       element: (
-        <Protected>
-          <Layout />,
-        </Protected>
+        <UserProvider>
+          <Protected>
+            <Layout />
+          </Protected>
+        </UserProvider>
       ),
       children: [
         {
@@ -40,9 +43,11 @@ const App = () => {
     {
       path: "/view/:resumeId",
       element: (
-        <Protected>
-          <View />
-        </Protected>
+        <UserProvider>
+          <Protected>
+            <View />
+          </Protected>
+        </UserProvider>
       ),
     },
     {
