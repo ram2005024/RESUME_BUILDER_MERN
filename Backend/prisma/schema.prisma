@@ -24,8 +24,9 @@ model Resume{
   user User @relation(fields: [userID], references: [id],onDelete: Cascade)
   title String? @default("Untitled resume")
   public Boolean @default(false)
+  skills String[]
   template String? @default("classic")
-  accent_color String? @default("3B82F6")
+  accent_color String? @default("#3B82F6")
   professional_summary String? @default("")
   personal_info Json?
   experience Experience[]
@@ -37,7 +38,7 @@ model Resume{
 model Experience{
  id String @id @default(uuid())
   resumeID String
-  resume Resume @relation(fields: [resumeID],references: [id])
+  resume Resume @relation(fields: [resumeID],references: [id],onDelete: Cascade)
   company String?
   position String?
   start_date String?
@@ -48,7 +49,7 @@ model Experience{
 model Project{
  id String @id @default(uuid())
   resumeID String
-  resume Resume @relation(fields: [resumeID],references: [id])
+ resume Resume @relation(fields: [resumeID],references: [id],onDelete: Cascade)
   name String?
   type String?
   description String?
@@ -56,7 +57,7 @@ model Project{
 model Education{
   id String @id @default(uuid())
   resumeID String
-  resume Resume @relation(fields: [resumeID],references: [id])
+ resume Resume @relation(fields: [resumeID],references: [id],onDelete: Cascade)
   institution String?
   degree String?
   field String?

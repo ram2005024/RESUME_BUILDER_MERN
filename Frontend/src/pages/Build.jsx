@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { dummyResumeData } from "../assets/assets";
+
+import { toast } from "react-toastify";
 import {
   ArrowLeft,
   Briefcase,
@@ -25,20 +26,22 @@ import ExperienceContainer from "../components/ExperienceContainer";
 import ProjectContainer from "../components/ProjectContainer";
 import EducationContainer from "../components/EducationContainer";
 import SkillsContainer from "../components/SkillsContainer";
+import axios from "axios";
 
 const Build = () => {
   const [isOpen, setIsOpen] = useState(false);
+
   const [resume, setResume] = useState({
     personal_info: {},
     professional_summary: "",
     experience: [],
     skills: [],
     project: [],
-    template: "ClassicTemplate",
-    accent_color: "#818cf8",
+    template: "classic",
+    accent_color: "#3B82F6",
     public: false,
     education: [],
-    _id: "",
+    id: "",
     userId: "",
     title: "",
   });
@@ -53,11 +56,27 @@ const Build = () => {
   ];
   const [activeSectionIndex, setActiveSectionIndex] = useState(0);
   const { id } = useParams();
+
   const loadExisting = async () => {
-    const existingResume = dummyResumeData.find((items) => items._id === id);
-    if (existingResume) {
-      setResume(existingResume);
-      document.title(existingResume.title);
+    try {
+      const res = await axios.get(
+        import.meta.env.VITE_API_URL + `resume/get/${id}`,
+        {
+          withCredentials: true,
+        }
+      );
+      const resumee = res.data.resume;
+      if (resumee)
+        setResume({
+          ...resumee,
+          personal_info: resumee.personal_info || {},
+          experience: resumee.experience || [],
+          project: resumee.project || [],
+          education: resumee.education || [],
+          skills: resumee.skills || [],
+        });
+    } catch (error) {
+      console.log(error);
     }
   };
   const activeSection = sections[activeSectionIndex];
@@ -95,8 +114,22 @@ const Build = () => {
     },
   ];
 
-  const handleVisibility = async () => {
-    setResume({ ...resume, public: !resume.public });
+  const handleVisibility = async (status) => {
+    try {
+      const res = await axios.put(
+        import.meta.env.VITE_API_URL + "resume/update",
+        { resumeID: id, resumeData: { public: status } },
+        {
+          withCredentials: true,
+        }
+      );
+      if (res.data.success) {
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      setResume((prev) => ({ ...prev, public: !status }));
+      toast.error(error.message);
+    }
   };
   const handleResumeShare = async () => {
     const frontendURL = window.location.href.split(`/app/`)[0];
@@ -108,6 +141,124 @@ const Build = () => {
   const handleDownloadResume = async () => {
     window.print();
   };
+  const handleSave = async () => {
+    let resumeData = {};
+
+    switch (activeSection.id) {
+      case "personal":
+        resumeData = {
+          personal_info: resume.personal_info,
+
+          title: resume.title,
+          template: resume.template,
+          accent_color: resume.accent_color,
+          public: resume.public,
+          professional_summary: resume.professional_summary,
+        };
+        break;
+      case "summary":
+        resumeData = {
+          professional_summary: resume.professional_summary,
+        };
+        break;
+      case "experience":
+        try {
+          const res = await axios.put(
+            import.meta.env.VITE_API_URL + "resume/updateExperience",
+            { resumeID: id, resumeData: resume.experience },
+            {
+              withCredentials: true,
+            }
+          );
+          setResume((prev) => ({
+            ...prev,
+            experience: res.data.experience,
+          }));
+
+          if (res.data.success) toast.success(res.data.message);
+        } catch (error) {
+          console.log(error);
+          toast.error(error.message);
+        }
+        break;
+      case "projects":
+        try {
+          const res = await axios.put(
+            import.meta.env.VITE_API_URL + "resume/updateProjects",
+            { resumeID: id, resumeData: resume.project },
+            {
+              withCredentials: true,
+            }
+          );
+          if (res.data.success) {
+            setResume((prev) => ({ ...prev, project: res.data.project }));
+            toast.success(res.data.message);
+          }
+        } catch (error) {
+          console.log(error);
+          toast.error(error.message);
+        }
+        break;
+      case "education":
+        try {
+          const res = await axios.put(
+            import.meta.env.VITE_API_URL + "resume/updateEducation",
+            { resumeID: id, resumeData: resume.education },
+            {
+              withCredentials: true,
+            }
+          );
+          if (res.data.success) {
+            setResume((prev) => ({ ...prev, education: res.data.education }));
+            toast.success(res.data.message);
+          }
+        } catch (error) {
+          console.log(error);
+          toast.error(error.message);
+        }
+        break;
+      case "skills":
+        try {
+          const res = await axios.put(
+            import.meta.env.VITE_API_URL + "resume/update/skills",
+            {
+              id,
+              resumeData: resume.skills,
+            }
+          );
+          if (res.data.success) {
+            toast.success(res.data.message);
+            setResume((prev) => ({ ...prev, skills: res.data.skills }));
+          }
+        } catch (error) {
+          console.log(error);
+          toast.error(error.message);
+        }
+        break;
+
+      default:
+        resumeData = {};
+    }
+    if (activeSection.id === "personal" || activeSection.id === "summary") {
+      try {
+        const res = await axios.put(
+          import.meta.env.VITE_API_URL + "resume/update",
+          { resumeID: id, resumeData: resumeData },
+          {
+            withCredentials: true,
+          }
+        );
+        if (res.data.success) {
+          toast.success(res.data.message);
+          setResume((prev) => ({ ...prev, ...res.data.resume }));
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error(error.message);
+      }
+    }
+  };
+
   return (
     <div className="flex-1 bg-zinc-100">
       <div className="max-w-7xl mx-auto flex flex-col  py-5 relative">
@@ -139,6 +290,7 @@ const Build = () => {
                 <div className="flex gap-3">
                   <TemplateBox
                     isOpen={isOpen}
+                    id={id}
                     setResume={setResume}
                     resume={resume}
                     setIsOpen={setIsOpen}
@@ -148,6 +300,8 @@ const Build = () => {
                     }}
                   />
                   <AssetContainer
+                    resume={resume}
+                    id={id}
                     onChange={(data) => {
                       setResume((prev) => ({ ...prev, accent_color: data }));
                     }}
@@ -191,9 +345,12 @@ const Build = () => {
                     data={resume.personal_info}
                     removeBackground={removeBackground}
                     setRemoveBackground={setRemoveBackground}
+                    setResume={setResume}
+                    resume={resume}
                     onChange={(data) =>
                       setResume((prev) => ({ ...prev, personal_info: data }))
                     }
+                    handleSave={handleSave}
                   />
                 )}
                 {activeSection.id === "summary" && (
@@ -206,6 +363,7 @@ const Build = () => {
                         professional_summary: data,
                       }))
                     }
+                    handleSave={handleSave}
                   />
                 )}
                 {activeSection.id === "experience" && (
@@ -225,6 +383,7 @@ const Build = () => {
                         };
                       })
                     }
+                    handleSave={handleSave}
                   />
                 )}
                 {activeSection.id === "projects" && (
@@ -244,6 +403,7 @@ const Build = () => {
                         };
                       })
                     }
+                    handleSave={handleSave}
                   />
                 )}
                 {activeSection.id === "education" && (
@@ -263,10 +423,15 @@ const Build = () => {
                         };
                       })
                     }
+                    handleSave={handleSave}
                   />
                 )}
                 {activeSection.id === "skills" && (
-                  <SkillsContainer data={resume.skills} setResume={setResume} />
+                  <SkillsContainer
+                    data={resume.skills}
+                    setResume={setResume}
+                    handleSave={handleSave}
+                  />
                 )}
               </div>
             </div>
@@ -285,7 +450,10 @@ const Build = () => {
                   </button>
                 )}
                 <button
-                  onClick={() => handleVisibility()}
+                  onClick={() => {
+                    handleVisibility(!resume.public);
+                    setResume({ ...resume, public: !resume.public });
+                  }}
                   className="px-3 py-2.5 rounded-sm text-xs ring-indigo-400 hover:ring text-indigo-600 bg-gradient-to-br from-green-100 to-green-200 inline-flex items-center gap-1.5 transition-colors duration-200"
                 >
                   {resume.public ? (

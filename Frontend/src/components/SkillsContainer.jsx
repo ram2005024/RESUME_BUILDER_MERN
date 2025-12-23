@@ -1,7 +1,8 @@
 import { PlusIcon, Sparkles, XIcon } from "lucide-react";
-import { useState } from "react";
-const SkillsContainer = ({ data, setResume }) => {
+import { useRef, useState } from "react";
+const SkillsContainer = ({ data, setResume, handleSave }) => {
   const [skillName, setSkillName] = useState(null);
+  const inputRef = useRef(null);
   return (
     <div className="flex flex-col gap-4 mt-6">
       <div className="flex justify-between  items-center p-2">
@@ -15,16 +16,22 @@ const SkillsContainer = ({ data, setResume }) => {
       <div className="flex  items-center  gap-3">
         <input
           type="text"
+          ref={inputRef}
           onChange={(e) => setSkillName(e.target.value)}
           placeholder="Enter a skill (e.g. Javascript,Project management,Designer)"
           className="p-2 text-slate-600 rounded-lg border w-10/12 border-slate-200 focus:ring focus:ring-slate-600 outline-none"
         />
         <button
           onClick={() => {
+            if (!skillName) return;
+            const newSkill = [...data, skillName];
             setResume((prev) => ({
               ...prev,
-              skills: [...prev.skills, skillName],
+              skills: newSkill,
             }));
+            setSkillName("");
+            inputRef.current.value = "";
+            inputRef.current.focus();
           }}
           className="inline-flex px-4 py-2 items-center gap-4 bg-indigo-500 text-white hover:border hover:bg-indigo-500 outline-none rounded-lg  hover:border-slate-400 hover:ring hover:ring-indigo-300 "
         >
@@ -65,6 +72,15 @@ const SkillsContainer = ({ data, setResume }) => {
           relevant, and confident
         </p>
       </div>
+      <button
+        onClick={() => {
+          handleSave();
+        }}
+        disabled={data.length === 0}
+        className="self-start ml-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm active:scale-95"
+      >
+        Save
+      </button>
     </div>
   );
 };

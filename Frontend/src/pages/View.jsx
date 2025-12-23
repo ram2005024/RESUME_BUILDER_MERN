@@ -4,17 +4,24 @@ import { dummyResumeData } from "../assets/assets";
 import Preview from "../components/Preview";
 import LoaderComponent from "../components/Loader";
 import { FileSearch, Home } from "lucide-react";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const View = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { resumeId } = useParams();
   const [resume, setResume] = useState(null);
   const loadResume = async () => {
-    const currentResume = dummyResumeData.find(
-      (items) => items._id === resumeId
-    );
-    setResume(currentResume);
-    setIsLoading(false);
+    try {
+      const res = await axios.get(
+        import.meta.env.VITE_API_URL + `resume/get/${resumeId}`
+      );
+      if (res.data.success) setResume(res.data.resume);
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response?.data?.message || error.message);
+    }
   };
   useEffect(() => {
     loadResume();
@@ -23,8 +30,8 @@ const View = () => {
   return (
     <>
       {resume ? (
-        <div className="bg-slate-100 flex justify-center">
-          <div className="max-w-3xl mt-4 mb-4">
+        <div className="bg-slate-100   flex justify-center">
+          <div className="max-w-3xl w-full sm:mt-4 sm:mb-4 m-3">
             <Preview
               data={resume}
               accent={resume.accent_color}

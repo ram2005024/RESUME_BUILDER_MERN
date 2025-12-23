@@ -1,7 +1,7 @@
 import { Sparkle, Sparkles } from "lucide-react";
 import React from "react";
 
-const PersonalSummary = ({ data, onChange, setResume }) => {
+const PersonalSummary = ({ data, onChange, handleSave }) => {
   return (
     <div className="space-y-5 mt-7 w-full">
       <div className="flex flex-col gap-8">
@@ -32,6 +32,12 @@ const PersonalSummary = ({ data, onChange, setResume }) => {
           </p>
         </div>
       </div>
+      <button
+        onClick={() => handleSave()}
+        className="self-start ml-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm active:scale-95"
+      >
+        Save
+      </button>
     </div>
   );
 };

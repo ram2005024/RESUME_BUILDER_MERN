@@ -1,7 +1,23 @@
+import axios from "axios";
 import { Workflow, PlusIcon, Trash2 } from "lucide-react";
 import React from "react";
+import { toast } from "react-toastify";
 
-const ProjectContainer = ({ setResume, data, onChange }) => {
+const ProjectContainer = ({ setResume, data, onChange, handleSave }) => {
+  const handleDeleteProject = async (pro) => {
+    if (!pro?.id) toast.error("Deletion failed");
+    try {
+      const proID = pro?.id;
+      const res = await axios.delete(
+        import.meta.env.VITE_API_URL + "resume/delete/project",
+        { data: { proID }, withCredentials: true }
+      );
+      if (res.data.success) toast.success(res.data.message);
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
   return (
     <div className="flex flex-col gap-3 mt-6">
       <div className="flex justify-between  items-center p-2">
@@ -48,12 +64,13 @@ const ProjectContainer = ({ setResume, data, onChange }) => {
                   </h2>
                   <Trash2
                     className="text-red-400 cursor-pointer hover:text-red-600 size-5"
-                    onClick={() =>
+                    onClick={() => {
                       setResume((prev) => ({
                         ...prev,
                         project: prev.project.filter((_, i) => i !== index),
-                      }))
-                    }
+                      }));
+                      handleDeleteProject(project);
+                    }}
                   />
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -91,6 +108,13 @@ const ProjectContainer = ({ setResume, data, onChange }) => {
           })}
         </div>
       )}
+      <button
+        onClick={() => handleSave()}
+        disabled={data.length === 0}
+        className="self-start ml-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm active:scale-95"
+      >
+        Save
+      </button>
     </div>
   );
 };

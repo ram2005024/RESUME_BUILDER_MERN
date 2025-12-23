@@ -1,5 +1,25 @@
+import axios from "axios";
 import { BriefcaseBusiness, PlusIcon, Sparkles, Trash2 } from "lucide-react";
-const ExperienceContainer = ({ data, onChange, setResume }) => {
+import { toast } from "react-toastify";
+const ExperienceContainer = ({ data, onChange, setResume, handleSave }) => {
+  const handleDeleteExperience = async (exp, index) => {
+    setResume((prev) => ({
+      ...prev,
+      experience: prev.experience.filter((_, i) => i !== index),
+    }));
+    if (!exp?.id) return;
+    try {
+      const expID = exp?.id;
+      const res = await axios.delete(
+        import.meta.env.VITE_API_URL + "resume/delete/experience",
+        { data: { expID }, withCredentials: true }
+      );
+      if (res.data.success) toast.success(res.data.message);
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
   return (
     <div className="flex flex-col gap-3 mt-6">
       <div className="flex justify-between  items-center p-2">
@@ -50,14 +70,9 @@ const ExperienceContainer = ({ data, onChange, setResume }) => {
                   </h2>
                   <Trash2
                     className="text-red-400 cursor-pointer hover:text-red-600 size-5"
-                    onClick={() =>
-                      setResume((prev) => ({
-                        ...prev,
-                        experience: prev.experience.filter(
-                          (_, i) => i !== index
-                        ),
-                      }))
-                    }
+                    onClick={() => {
+                      handleDeleteExperience(exp, index);
+                    }}
                   />
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -130,6 +145,13 @@ const ExperienceContainer = ({ data, onChange, setResume }) => {
           })}
         </div>
       )}
+      <button
+        onClick={() => handleSave()}
+        disabled={data.length === 0}
+        className="self-start ml-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm active:scale-95"
+      >
+        Save
+      </button>
     </div>
   );
 };

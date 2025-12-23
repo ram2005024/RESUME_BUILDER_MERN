@@ -1,7 +1,23 @@
+import axios from "axios";
 import { GraduationCap, PlusIcon, Trash2 } from "lucide-react";
-import React from "react";
 
-const EducationContainer = ({ data, onChange, setResume }) => {
+import { toast } from "react-toastify";
+
+const EducationContainer = ({ data, onChange, setResume, handleSave }) => {
+  const handleDeleteEducation = async (edu) => {
+    if (!edu?.id) toast.error("Deletion failed");
+    try {
+      const eduID = edu?.id;
+      const res = await axios.delete(
+        import.meta.env.VITE_API_URL + "resume/delete/education",
+        { data: { eduID }, withCredentials: true }
+      );
+      if (res.data.success) toast.success(res.data.message);
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
   return (
     <div className="flex flex-col gap-3 mt-6">
       <div className="flex justify-between  items-center p-2">
@@ -50,12 +66,13 @@ const EducationContainer = ({ data, onChange, setResume }) => {
                   </h2>
                   <Trash2
                     className="text-red-400 cursor-pointer hover:text-red-600 size-5"
-                    onClick={() =>
+                    onClick={() => {
                       setResume((prev) => ({
                         ...prev,
                         education: prev.education.filter((_, i) => i !== index),
-                      }))
-                    }
+                      }));
+                      handleDeleteEducation(edu);
+                    }}
                   />
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -109,6 +126,13 @@ const EducationContainer = ({ data, onChange, setResume }) => {
           })}
         </div>
       )}
+      <button
+        onClick={() => handleSave()}
+        disabled={data.length === 0}
+        className="self-start ml-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm active:scale-95"
+      >
+        Save
+      </button>
     </div>
   );
 };

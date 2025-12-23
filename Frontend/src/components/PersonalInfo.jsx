@@ -1,25 +1,56 @@
+import axios from "axios";
 import {
   BriefcaseBusiness,
   Globe,
   LinkIcon,
   LocateIcon,
   MailIcon,
-  MapIcon,
   PhoneCall,
   User,
   User2Icon,
-  UserCircle,
 } from "lucide-react";
-import React from "react";
+import { useState } from "react";
+import { toast } from "react-toastify";
 
 const PersonalInfo = ({
   data,
   setRemoveBackground,
   removeBackground,
   onChange,
+  setResume,
+  resume,
+  handleSave,
 }) => {
-  const handleChange = (field, value) => {
-    onChange({ ...data, [field]: value });
+  const [imageFile, setFile] = useState(null);
+  const handleUploadImage = async (file, removeBG = false) => {
+    const formData = new FormData();
+    formData.append("image", file);
+    formData.append("removeBG", removeBG);
+    formData.append("resumeID", resume.id);
+
+    try {
+      const res = await axios.post(
+        import.meta.env.VITE_API_URL + "resume/uploadImage",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        }
+      );
+      if (res.data.success) {
+        setResume((prev) => ({
+          ...prev,
+          personal_info: {
+            ...prev.personal_info,
+            image: res.data.imageURL,
+            removeBackground: removeBG,
+          },
+        }));
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to upload image");
+    }
   };
   const formFields = [
     {
@@ -45,7 +76,7 @@ const PersonalInfo = ({
     {
       label: "Location",
       key: "location",
-      logo: LocateIcon  ,
+      logo: LocateIcon,
       type: "text",
     },
     {
@@ -67,8 +98,15 @@ const PersonalInfo = ({
       type: "text",
     },
   ];
+
   return (
-    <div className="flex flex-col space-y-5 ">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSave();
+      }}
+      className="flex flex-col space-y-5 "
+    >
       <div className="flex flex-col gap-1.5">
         <h1 className="text-2xl font-bold ">Personal Information</h1>
         <p className="text-slate-500">Get started with personal information</p>
@@ -89,15 +127,16 @@ const PersonalInfo = ({
         ) : (
           <div className="flex items-center gap-2">
             <User2Icon className="size-10 rounded-full  hover:opacity-80 stroke-1 p-1 bg-gray-100 ring-0" />
-            <label>
-              <p className="text-slate-600 hover:text-slate-400">
-                Upload user image
-              </p>
+            <label className="text-slate-600 hover:text-slate-400">
+              Upload user image
               <input
                 type="file"
                 accept="image/jpeg image/png"
                 className="hidden"
-                onChange={(e) => handleChange("image", e.target.files[0])}
+                onChange={(e) => {
+                  setFile(e.target.files[0]);
+                  handleUploadImage(e.target.files[0]);
+                }}
               />
             </label>
           </div>
@@ -110,8 +149,10 @@ const PersonalInfo = ({
                 type="checkbox"
                 hidden
                 className="peer sr-only"
-                onChange={() => setRemoveBackground(!removeBackground)}
-                checked={removeBackground}
+                onChange={() => {
+                  setRemoveBackground(!removeBackground);
+                  handleUploadImage(imageFile, !removeBackground);
+                }}
               />
               <div className="w-12 h-7 cursor-pointer bg-slate-400 rounded-full peer-checked:bg-green-600 relative peer-checked:ring-pink-300 transition-colors duration-200">
                 <span
@@ -151,7 +192,13 @@ const PersonalInfo = ({
           </div>
         );
       })}
-    </div>
+      <button
+        type="submit"
+        className="self-start ml-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm active:scale-95"
+      >
+        Save
+      </button>
+    </form>
   );
 };
 
