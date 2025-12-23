@@ -10,6 +10,7 @@ import {
   User2Icon,
 } from "lucide-react";
 import { useState } from "react";
+
 import { toast } from "react-toastify";
 
 const PersonalInfo = ({
@@ -21,13 +22,15 @@ const PersonalInfo = ({
   resume,
   handleSave,
 }) => {
-  const [imageFile, setFile] = useState(null);
-  const handleUploadImage = async (file, removeBG = false) => {
+  const [disable, setDisable] = useState(false);
+  const [file, setFile] = useState(null);
+  const handleUploadImage = async (fileToUpload = null, removeBG = false) => {
     const formData = new FormData();
-    formData.append("image", file);
-    formData.append("removeBG", removeBG);
-    formData.append("resumeID", resume.id);
-
+    if (fileToUpload) {
+      formData.append("image", fileToUpload);
+      formData.append("removeBG", removeBG);
+      formData.append("resumeID", resume.id);
+    }
     try {
       const res = await axios.post(
         import.meta.env.VITE_API_URL + "resume/uploadImage",
@@ -38,6 +41,7 @@ const PersonalInfo = ({
         }
       );
       if (res.data.success) {
+        toast.success(res.data.message);
         setResume((prev) => ({
           ...prev,
           personal_info: {
@@ -46,7 +50,9 @@ const PersonalInfo = ({
             removeBackground: removeBG,
           },
         }));
+        setDisable(false);
       }
+      if (!res.data.success) toast.error(res.data.message);
     } catch (error) {
       console.log(error);
       toast.error("Failed to upload image");
@@ -98,7 +104,10 @@ const PersonalInfo = ({
       type: "text",
     },
   ];
-
+  const handleChange = async (key, value) => {
+    onChange({ ...data, [key]: value });
+  };
+  console.log("Hello", data.image);
   return (
     <form
       onSubmit={(e) => {
@@ -112,14 +121,10 @@ const PersonalInfo = ({
         <p className="text-slate-500">Get started with personal information</p>
       </div>
       <div className="flex items-center  gap-2">
-        {data.image ? (
+        {data?.image ? (
           <div>
             <img
-              src={
-                typeof data.image === "string"
-                  ? data.image
-                  : URL.createObjectURL(data.image)
-              }
+              src={data.image}
               className="w-16 h-16 rounded-full"
               alt="user_image"
             />
@@ -135,25 +140,34 @@ const PersonalInfo = ({
                 className="hidden"
                 onChange={(e) => {
                   setFile(e.target.files[0]);
-                  handleUploadImage(e.target.files[0]);
+                  handleUploadImage(e.target.files[0], false);
                 }}
               />
             </label>
           </div>
         )}
-        {(typeof data.image === "object" || typeof data.image === "string") && (
+        {data.image && (
           <div className="flex flex-col gap-2  justify-center">
             <span>Remove background</span>
             <label className="inline-flex  gap-2 ">
               <input
                 type="checkbox"
                 hidden
+                disabled={disable}
                 className="peer sr-only"
                 onChange={() => {
                   setRemoveBackground(!removeBackground);
-                  handleUploadImage(imageFile, !removeBackground);
+                  setDisable(true);
+                  handleUploadImage(file, !removeBackground);
                 }}
               />
+              {disable && (
+                <div
+                  class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent text-gray-500"
+                  aria-label="Loading"
+                  role="status"
+                ></div>
+              )}
               <div className="w-12 h-7 cursor-pointer bg-slate-400 rounded-full peer-checked:bg-green-600 relative peer-checked:ring-pink-300 transition-colors duration-200">
                 <span
                   className={`dot w-5 h-5 absolute top-1 left-1 rounded-full bg-slate-300 transform transition-transform duration-300 ease-in-out  ${
