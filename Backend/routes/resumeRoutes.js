@@ -18,6 +18,7 @@ import {
 import { upload } from "../config/multer.js";
 
 import { protectUserAuth } from "../middlewares/protect.js";
+import { enhanceText } from "../controllers/aiController.js";
 
 export const resumeRoute = express.Router();
 resumeRoute.get("/get", protectUserAuth, getResume);

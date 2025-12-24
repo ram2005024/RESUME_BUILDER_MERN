@@ -1,5 +1,6 @@
 import { prisma } from "../config/dbConfig.js";
 import imagekit from "../config/ImageKit.js";
+
 import fs from "fs";
 //------Get resume by userID--------------
 export const getResume = async (req, res) => {

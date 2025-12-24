@@ -41,7 +41,6 @@ const Preview = ({ data, accent, template, classes = "" }) => {
           body {
             width: 8.5in;
             height: 11in;
-            overflow: hidden;
           }
           body * {
             visibility: hidden;

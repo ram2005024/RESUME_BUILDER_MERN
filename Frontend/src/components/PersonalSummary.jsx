@@ -1,7 +1,38 @@
+import axios from "axios";
 import { Sparkle, Sparkles } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
+import { toast } from "react-toastify";
 
-const PersonalSummary = ({ data, onChange, handleSave }) => {
+const PersonalSummary = ({ data, onChange, handleSave, setResume }) => {
+  const [loading, setLoading] = useState(false);
+  const handleEnhance = async () => {
+    setLoading(true);
+
+    try {
+      const response = await axios.post(
+        import.meta.env.VITE_API_URL + "ai/enhanceText",
+        {
+          text: data,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+      if (!response.data.success) {
+        toast.error(response.data.message);
+        setLoading(false);
+        return;
+      }
+
+      setResume((prev) => ({
+        ...prev,
+        professional_summary: response.data.responseText,
+      }));
+      setLoading(false);
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    }
+  };
   return (
     <div className="space-y-5 mt-7 w-full">
       <div className="flex flex-col gap-8">
@@ -13,9 +44,29 @@ const PersonalSummary = ({ data, onChange, handleSave }) => {
             </p>
           </div>
 
-          <button className="inline-flex items-center p-2 rounded-lg bg-slate-200 gap-2 h-10 hover:ring hover:ring-indigo-400 hover:bg-slate-100">
-            <Sparkles className="size-4 text-slate-500" />
-            <span className="text-slate-600">AI Enhance</span>
+          <button
+            onClick={() => {
+              handleEnhance();
+            }}
+            disabled={loading}
+            className="inline-flex items-center p-2 rounded-lg bg-slate-200 gap-2 h-10 hover:ring hover:ring-indigo-400 hover:bg-slate-100"
+          >
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <div className="relative w-6 h-6">
+                  <style>{`@keyframes spin{to{transform:rotate(360deg)}}.spinner{animation:spin 3s linear infinite}`}</style>
+                  <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-blue-500 border-r-purple-500 spinner"></div>
+                </div>
+                <p className="text-sm font-medium text-gray-700">
+                  Enhancing text...
+                </p>
+              </div>
+            ) : (
+              <>
+                <Sparkles className="size-4 text-slate-500" />
+                <span className="text-slate-600">AI Enhance</span>
+              </>
+            )}
           </button>
         </div>
         <div>

@@ -9,6 +9,7 @@ import {
   User,
   User2Icon,
 } from "lucide-react";
+
 import { useState } from "react";
 
 import { toast } from "react-toastify";
@@ -24,6 +25,10 @@ const PersonalInfo = ({
 }) => {
   const [disable, setDisable] = useState(false);
   const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [loadingBGRemove, setLoadingBGRemove] = useState(false);
+
+  const isBGRemoved = data?.removeBackground === true;
   const handleUploadImage = async (fileToUpload = null, removeBG = false) => {
     const formData = new FormData();
     if (fileToUpload) {
@@ -32,6 +37,7 @@ const PersonalInfo = ({
       formData.append("resumeID", resume.id);
     }
     try {
+      setLoading(true);
       const res = await axios.post(
         import.meta.env.VITE_API_URL + "resume/uploadImage",
         formData,
@@ -47,15 +53,16 @@ const PersonalInfo = ({
           personal_info: {
             ...prev.personal_info,
             image: res.data.imageURL,
-            removeBackground: removeBG,
+            removeBackground: false,
           },
         }));
-        setDisable(false);
       }
       if (!res.data.success) toast.error(res.data.message);
     } catch (error) {
       console.log(error);
       toast.error("Failed to upload image");
+    } finally {
+      setLoading(false);
     }
   };
   const formFields = [
@@ -107,7 +114,44 @@ const PersonalInfo = ({
   const handleChange = async (key, value) => {
     onChange({ ...data, [key]: value });
   };
-  console.log("Hello", data.image);
+
+  const handleRemoveBackground = async (file, removeBG) => {
+    setLoadingBGRemove(true);
+    setDisable(true);
+    const formData = new FormData();
+    if (file) {
+      formData.append("image", file);
+      formData.append("removeBG", removeBG);
+      formData.append("resumeID", resume.id);
+    }
+    try {
+      const res = await axios.post(
+        import.meta.env.VITE_API_URL + "resume/uploadImage",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        }
+      );
+      if (res.data.success) {
+        toast.success("Removed background");
+        setResume((prev) => ({
+          ...prev,
+          personal_info: {
+            ...prev.personal_info,
+            image: res.data.imageURL,
+            removeBackground: true,
+          },
+        }));
+      }
+      if (!res.data.success) toast.error(res.data.message);
+    } catch (error) {
+      console.log(error.message);
+      toast.error("Error occured");
+    } finally {
+      setLoadingBGRemove(false);
+    }
+  };
   return (
     <form
       onSubmit={(e) => {
@@ -129,14 +173,25 @@ const PersonalInfo = ({
               alt="user_image"
             />
           </div>
+        ) : loading ? (
+          <div className="flex gap-3">
+            <div className="relative w-content">
+              <span>Loading image...</span>
+            </div>
+            <div
+              class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent text-gray-500"
+              aria-label="Loading"
+              role="status"
+            ></div>
+          </div>
         ) : (
           <div className="flex items-center gap-2">
-            <User2Icon className="size-10 rounded-full  hover:opacity-80 stroke-1 p-1 bg-gray-100 ring-0" />
+            <User2Icon className="size-10 rounded-full hover:opacity-80 stroke-1 p-1 bg-gray-100 ring-0" />
             <label className="text-slate-600 hover:text-slate-400">
               Upload user image
               <input
                 type="file"
-                accept="image/jpeg image/png"
+                accept="image/jpeg,image/png"
                 className="hidden"
                 onChange={(e) => {
                   setFile(e.target.files[0]);
@@ -146,7 +201,8 @@ const PersonalInfo = ({
             </label>
           </div>
         )}
-        {data.image && (
+
+        {!isBGRemoved && data.image ? (
           <div className="flex flex-col gap-2  justify-center">
             <span>Remove background</span>
             <label className="inline-flex  gap-2 ">
@@ -158,16 +214,17 @@ const PersonalInfo = ({
                 onChange={() => {
                   setRemoveBackground(!removeBackground);
                   setDisable(true);
-                  handleUploadImage(file, !removeBackground);
+                  setResume((prev) => ({
+                    ...prev,
+                    personal_info: {
+                      ...prev.personal_info,
+                      removeBackground: true,
+                    },
+                  }));
+                  handleRemoveBackground(file, true);
                 }}
               />
-              {disable && (
-                <div
-                  class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent text-gray-500"
-                  aria-label="Loading"
-                  role="status"
-                ></div>
-              )}
+
               <div className="w-12 h-7 cursor-pointer bg-slate-400 rounded-full peer-checked:bg-green-600 relative peer-checked:ring-pink-300 transition-colors duration-200">
                 <span
                   className={`dot w-5 h-5 absolute top-1 left-1 rounded-full bg-slate-300 transform transition-transform duration-300 ease-in-out  ${
@@ -177,6 +234,18 @@ const PersonalInfo = ({
               </div>
             </label>
           </div>
+        ) : loadingBGRemove ? (
+          <div className="flex items-center gap-2">
+            <div className="relative w-6 h-6">
+              <style>{`@keyframes spin{to{transform:rotate(360deg)}}.spinner{animation:spin 3s linear infinite}`}</style>
+              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-blue-500 border-r-purple-500 spinner"></div>
+            </div>
+            <p className="text-sm font-medium text-gray-700">
+              Removing background...
+            </p>
+          </div>
+        ) : (
+          ""
         )}
       </div>
       {formFields.map((items) => {

@@ -1,4 +1,3 @@
-import Nav from "../components/DashBoard/Nav";
 import {
   PlusIcon,
   UploadCloud,
@@ -6,7 +5,6 @@ import {
   Trash,
   PenIcon,
   XIcon,
-  FileIcon,
   File,
   FileX,
 } from "lucide-react";
@@ -17,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { userContext } from "../context/UserContext.jsx";
 import { toast } from "react-toastify";
+import pdfToText from "react-pdftotext";
 const DashBoard = () => {
   const {
     userID,
@@ -27,6 +26,7 @@ const DashBoard = () => {
 
   const [isCreateResume, setIsCreateResume] = useState(false);
   const [isUploadResume, setIsUploadResume] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [editResume, setIsEditResume] = useState(false);
   const [resumeID, setResumeID] = useState("");
@@ -87,11 +87,42 @@ const DashBoard = () => {
       toast.error(error.response?.data?.message || error.message);
     }
   };
-  const handleUploadResume = async () => {
-    setTitle("");
-    setIsUploadResume(false);
-    setUploadFile(null);
-    return toast.error("Not available");
+  const handleUploadResume = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const textPDF = await pdfToText(uploadFile);
+      console.log(textPDF);
+      const res = await axios.post(
+        import.meta.env.VITE_API_URL + "ai/generateResume",
+        {
+          title,
+          fileText: textPDF,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+      if (!res.data.success) {
+        toast.error(res.data.message);
+        setTitle("");
+        setIsUploadResume(false);
+        setUploadFile(null);
+
+        return;
+      }
+      toast.success(res.data.message);
+      setTitle("");
+      setIsUploadResume(false);
+      setUploadFile(null);
+
+      navigate(`/app/build/${res.data.resume.id}`);
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
   const handleEditResume = async (e) => {
     e.preventDefault();
@@ -261,7 +292,7 @@ const DashBoard = () => {
               onChange={(e) => setTitle(e.target.value)}
               required
               className="w-full py-2 px-3 rounded-lg transition-color duration-200"
-              placeholder="Enter resume"
+              placeholder="Enter resume title"
             />
             <button
               type="submit"
@@ -320,6 +351,17 @@ const DashBoard = () => {
                 <>
                   <File size={30} className="text-red stroke-2 mb-3" />
                   <span>{uploadFile.name}</span>
+                  {loading && (
+                    <div className="flex items-center gap-2">
+                      <div className="relative w-6 h-6">
+                        <style>{`@keyframes spin{to{transform:rotate(360deg)}}.spinner{animation:spin 3s linear infinite}`}</style>
+                        <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-blue-500 border-r-purple-500 spinner"></div>
+                      </div>
+                      <p className="text-sm font-medium text-gray-700">
+                        Uploading file...
+                      </p>
+                    </div>
+                  )}
                 </>
               )}
               <input
