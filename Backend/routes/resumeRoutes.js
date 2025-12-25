@@ -22,16 +22,21 @@ import { enhanceText } from "../controllers/aiController.js";
 
 export const resumeRoute = express.Router();
 resumeRoute.get("/get", protectUserAuth, getResume);
-resumeRoute.post("/create", createResume);
-resumeRoute.put("/editResumeTitle/:resumeID", editResumeTitle);
-resumeRoute.delete("/deleteResume/:resumeID", deleteResume);
-resumeRoute.get("/get/:resumeID", getResumeByResumeID);
-resumeRoute.put("/update", updateResumeField);
-resumeRoute.put("/updateExperience", updateExperience);
-resumeRoute.put("/updateEducation", updateEducation);
-resumeRoute.put("/updateProjects", updateProject);
-resumeRoute.put("/update/skills", updateSkills);
-resumeRoute.delete("/delete/experience", deleteExperience);
-resumeRoute.delete("/delete/project", deleteProject);
-resumeRoute.delete("/delete/education", deleteEducation);
-resumeRoute.post("/uploadImage", upload.single("image"), uploadImage);
+resumeRoute.post("/create", protectUserAuth, createResume);
+resumeRoute.put("/editResumeTitle/:resumeID", protectUserAuth, editResumeTitle);
+resumeRoute.delete("/deleteResume/:resumeID", protectUserAuth, deleteResume);
+resumeRoute.get("/get/:resumeID", protectUserAuth, getResumeByResumeID);
+resumeRoute.put("/update", protectUserAuth, updateResumeField);
+resumeRoute.put("/updateExperience", protectUserAuth, updateExperience);
+resumeRoute.put("/updateEducation", protectUserAuth, updateEducation);
+resumeRoute.put("/updateProjects", protectUserAuth, updateProject);
+resumeRoute.put("/update/skills", protectUserAuth, updateSkills);
+resumeRoute.delete("/delete/experience", protectUserAuth, deleteExperience);
+resumeRoute.delete("/delete/project", protectUserAuth, deleteProject);
+resumeRoute.delete("/delete/education", protectUserAuth, deleteEducation);
+resumeRoute.post(
+  "/uploadImage",
+  protectUserAuth,
+  upload.single("image"),
+  uploadImage
+);

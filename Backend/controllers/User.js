@@ -40,7 +40,7 @@ export const registerController = async (req, res) => {
 };
 //------------------------------ login controller-----------------------
 export const loginController = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, rememberMe } = req.body;
   if (!email || !password)
     return res.json({ success: false, message: "ALL fields are required" });
   try {
@@ -57,7 +57,7 @@ export const loginController = async (req, res) => {
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       secure: process.env.NODE_ENV === "production" ? true : false,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 1 * 60 * 1000,
     });
     userExist.password = undefined;
     return res.status(200).json({

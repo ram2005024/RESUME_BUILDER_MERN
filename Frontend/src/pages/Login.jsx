@@ -11,6 +11,8 @@ const Login = () => {
   const [message, setMessage] = useState("");
   const [canSendOTP, setResend] = useState(false);
   const [confirmPwd, setConfirm] = useState("");
+  const [rememberMe, setRemember] = useState(false);
+
   const inputRef = useRef([]);
   useEffect(() => {
     if (state === "login" || state === "register") {
@@ -63,6 +65,7 @@ const Login = () => {
           {
             email,
             password,
+            rememberMe,
           },
           {
             withCredentials: true,
@@ -355,7 +358,18 @@ const Login = () => {
             </div>
           )}
 
-          {/* Main Action Button */}
+          {state === "login" && (
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                className="cursor-pointer size-3"
+                onChange={(e) => setRemember(e.target.checked)}
+              />
+              <span className="text-sm font-semibold text-gray-600">
+                Remember me
+              </span>
+            </div>
+          )}
           <button
             className="w-full bg-black text-white py-4 rounded-xl font-bold text-sm mt-4 hover:bg-gray-800 transition-colors"
             onClick={(e) => handleSubmit(e)}
