@@ -31,6 +31,7 @@ const PersonalInfo = ({
   const isBGRemoved = data?.removeBackground === true;
   const handleUploadImage = async (fileToUpload = null, removeBG = false) => {
     const formData = new FormData();
+    console.log(fileToUpload);
     if (fileToUpload) {
       formData.append("image", fileToUpload);
       formData.append("removeBG", removeBG);

@@ -2,7 +2,6 @@ import { prisma } from "../config/dbConfig.js";
 import imagekit from "../config/ImageKit.js";
 import path from "path";
 
-import fs from "fs";
 //------Get resume by userID--------------
 export const getResume = async (req, res) => {
   const id = req.userID;
@@ -265,29 +264,26 @@ export const updateSkills = async (req, res) => {
 };
 //---------------------For image url------------------------
 export const uploadImage = async (req, res) => {
-  const image = req.file;
+  if (!req.file) return res.status(400).json({ message: "File missing" });
 
   try {
-    if (!image) {
-      console.log("No file uploaded");
-      const response = await imagekit.files.upload({
-        file: req.file.buffer,
-        fileName: req.body.resumeID + path.extname(req.file.originalname),
-        folder: "user_resumes",
-        transformation: {
-          pre:
-            "w-300,h-300,fo-face,z-0.75" +
-            (req.body.removeBG === "true" ? ",e-bgremove" : ""),
-        },
-      });
+    const response = await imagekit.files.upload({
+      file: req.file.buffer,
+      fileName: req.body.resumeID + path.extname(req.file.originalname),
+      folder: "user_resumes",
+      transformation: {
+        pre:
+          "w-300,h-300,fo-face,z-0.75" +
+          (req.body.removeBG === "true" ? ",e-bgremove" : ""),
+      },
+    });
 
-      return res.json({
-        message: "Added image",
-        success: true,
-        imageURL: response.url,
-      });
-    }
+    return res.json({
+      message: "Added image",
+      success: true,
+      imageURL: response.url,
+    });
   } catch (error) {
-    return res.json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
