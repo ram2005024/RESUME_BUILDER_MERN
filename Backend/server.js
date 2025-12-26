@@ -21,7 +21,7 @@ app.use(
   cors({
     origin:
       process.env.NODE_ENV === "production"
-        ? "https://frotend-resume.onrender.com/"
+        ? "https://frotend-resume.onrender.com"
         : "http://localhost:5173",
     credentials: true,
   })
