@@ -266,10 +266,10 @@ export const updateSkills = async (req, res) => {
 //---------------------For image url------------------------
 export const uploadImage = async (req, res) => {
   const image = req.file;
-  console.log(req.body.removeBG);
+
   try {
-    if (image) {
-      console.log(image);
+    if (!image) {
+      console.log("No file uploaded");
       const response = await imagekit.files.upload({
         file: req.file.buffer,
         fileName: req.body.resumeID + path.extname(req.file.originalname),
