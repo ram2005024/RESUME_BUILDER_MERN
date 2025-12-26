@@ -30,7 +30,8 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:8000/auth/google/callback",
+      callbackURL:
+        "https://resume-builder-mern-backend.onrender.com/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, cb) => {
       try {
@@ -53,7 +54,8 @@ passport.use(
     {
       clientID: process.env.FACEBOOK_APP_ID,
       clientSecret: process.env.FACEBOOK_APP_SECRET,
-      callbackURL: "http://localhost:8000/auth/facebook/callback",
+      callbackURL:
+        "https://resume-builder-mern-backend.onrender.com/auth/facebook/callback",
       profileFields: ["id", "displayName", "email"],
     },
     async (accessToken, refreshToken, profile, cb) => {
@@ -78,7 +80,8 @@ passport.use(
     {
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: "http://localhost:8000/auth/github/callback",
+      callbackURL:
+        "https://resume-builder-mern-backend.onrender.com/auth/github/callback",
     },
     async (accessToken, refreshToken, profile, cb) => {
       try {
