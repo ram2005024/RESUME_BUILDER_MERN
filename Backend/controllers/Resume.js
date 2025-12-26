@@ -1,5 +1,6 @@
 import { prisma } from "../config/dbConfig.js";
 import imagekit from "../config/ImageKit.js";
+import path from "path";
 
 import fs from "fs";
 //------Get resume by userID--------------
