@@ -4,7 +4,7 @@ import Layout from "./pages/Layout.jsx";
 import DashBoard from "./pages/DashBoard.jsx";
 import Build from "./pages/Build.jsx";
 import View from "./pages/View.jsx";
-import Login from "./pages/login.jsx";
+import Login from "./pages/Login.jsx";
 import Protected from "./middlewares/Protected.jsx";
 import Public from "./middlewares/Public.jsx";
 import DemoContent from "./pages/FooterPages/Dummy.jsx";
