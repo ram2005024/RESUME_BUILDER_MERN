@@ -29,3 +29,11 @@ html {
     margin: 0;
   }
 }
+@media (max-width: 480px) {
+  .custom-toast {
+    width: 250px;
+
+    transform: translateX(75%);
+    font-size: 14px;
+  }
+}

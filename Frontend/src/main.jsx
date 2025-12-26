@@ -8,6 +8,7 @@ import { ToastContainer } from "react-toastify";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ToastContainer
+      className="custom-toast"
       position="top-center"
       autoClose={1500}
       pauseOnHover={false}

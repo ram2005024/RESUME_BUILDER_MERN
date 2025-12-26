@@ -169,10 +169,10 @@ const DashBoard = () => {
     <div className=" flex flex-col min-h-screen ">
       <div className=" bg-slate-50  grow flex ">
         <div className="sm:w-7xl mx-auto flex flex-col gap-8 py-10">
-          <div className="flex  gap-6 px-4 py-4 w-screen group">
+          <div className="flex sm:gap-6 gap-20 px-4 py-4 w-screen group">
             <button
               onClick={() => setIsCreateResume(true)}
-              className="sm:w-[200px] h-48  bg-white flex rounded-lg border flex-col justify-center hover:shadow-lg items-center gap-3 hover:scale-105 transition-all border-dashed duration-200"
+              className="sm:w-[200px] h-48 p-4 sm:p-0 ml-5  bg-white flex rounded-lg border flex-col justify-center hover:shadow-lg items-center gap-3 hover:scale-105 transition-all border-dashed duration-200"
             >
               <PlusIcon
                 size={40}
@@ -182,7 +182,7 @@ const DashBoard = () => {
             </button>
             <button
               onClick={() => setIsUploadResume(true)}
-              className="sm:w-[200px] h-48 bg-white hover:shadow-lg flex border-dashed border rounded-lg flex-col justify-center  items-center gap-3 hover:scale-105 transition-all duration-200"
+              className="sm:w-[200px] h-48 p-4 sm:p-0  bg-white hover:shadow-lg flex border-dashed border rounded-lg flex-col justify-center  items-center gap-3 hover:scale-105 transition-all duration-200"
             >
               <UploadCloud
                 size={40}

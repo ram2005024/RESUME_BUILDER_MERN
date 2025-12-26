@@ -21,7 +21,7 @@ const Preview = ({ data, accent, template, classes = "" }) => {
     }
   };
   return (
-    <div className="w-full bg-white">
+    <div className="w-full bg-white ">
       <div
         className={
           "border border-gray-400 print:border-none print:shadow-none " +

@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,60 +6,67 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-model User{
-  id String @id @default(uuid())
-  name String? 
-  email String @unique
-  password String?
-  otp String?
+
+model User {
+  id         String    @id @default(uuid())
+  name       String?
+  email      String    @unique
+  password   String?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  otp        String?
+  provider String?
+  providerID String?
   otpExpires DateTime?
-  resumes Resume[]
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  resumes    Resume[]
 }
-model Resume{
-  id String @id @default(uuid())
-  userID String 
-  user User @relation(fields: [userID], references: [id],onDelete: Cascade)
-  title String? @default("Untitled resume")
-  public Boolean @default(false)
-  skills String[]
-  template String? @default("classic")
-  accent_color String? @default("#3B82F6")
-  professional_summary String? @default("")
-  personal_info Json?
-  experience Experience[]
-  project Project[]
-  education Education[]
-    created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+
+model Resume {
+  id                   String       @id @default(uuid())
+  userID               String
+  title                String?      @default("Untitled resume")
+  public               Boolean      @default(false)
+  template             String?      @default("classic")
+  accent_color         String?      @default("#3B82F6")
+  professional_summary String?      @default("")
+  personal_info        Json?
+  created_at           DateTime     @default(now())
+  updated_at           DateTime     @updatedAt
+  skills               String[]
+  education            Education[]
+  experience           Experience[]
+  project              Project[]
+  user                 User         @relation(fields: [userID], references: [id], onDelete: Cascade)
 }
-model Experience{
- id String @id @default(uuid())
-  resumeID String
-  resume Resume @relation(fields: [resumeID],references: [id],onDelete: Cascade)
-  company String?
-  position String?
-  start_date String?
-  end_date String?
+
+model Experience {
+  id          String   @id @default(uuid())
+  resumeID    String
+  company     String?
+  position    String?
+  start_date  String?
+  end_date    String?
   description String?
-  is_current Boolean?
+  is_current  Boolean?
+  resume      Resume   @relation(fields: [resumeID], references: [id], onDelete: Cascade)
 }
-model Project{
- id String @id @default(uuid())
-  resumeID String
- resume Resume @relation(fields: [resumeID],references: [id],onDelete: Cascade)
-  name String?
-  type String?
+
+model Project {
+  id          String  @id @default(uuid())
+  resumeID    String
+  name        String?
+  type        String?
   description String?
+  resume      Resume  @relation(fields: [resumeID], references: [id], onDelete: Cascade)
 }
-model Education{
-  id String @id @default(uuid())
-  resumeID String
- resume Resume @relation(fields: [resumeID],references: [id],onDelete: Cascade)
-  institution String?
-  degree String?
-  field String?
+
+model Education {
+  id              String  @id @default(uuid())
+  resumeID        String
+  institution     String?
+  degree          String?
+  field           String?
   graduation_date String?
-  gpa String?
+  gpa             String?
+  resume          Resume  @relation(fields: [resumeID], references: [id], onDelete: Cascade)
 }

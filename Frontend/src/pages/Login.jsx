@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import googleIcon from "../assets/google_logo.png";
+import facebookIcon from "../assets/facebook.png";
+import githubLogo from "../assets/github.png";
 import { toast } from "react-toastify";
 const Login = () => {
   const navigate = useNavigate();
@@ -18,6 +21,7 @@ const Login = () => {
     if (state === "login" || state === "register") {
       setEmail("");
       setName("");
+      setMessage("");
       setPassword("");
     }
   }, [state]);
@@ -380,6 +384,46 @@ const Login = () => {
             {state === "verify" && "Verify OTP"}
             {state === "newpassword" && "Update Password"}
           </button>
+          {state === "register" && (
+            <div className="flex flex-col gap-2 mt-4">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = `${
+                    import.meta.env.VITE_API_URL
+                  }auth/google`;
+                }}
+                className="text-sm bg-indigo-400 rounded-lg text-white font-semibold  w-full p-2  inline-flex gap-2 items-center justify-center"
+              >
+                <img src={googleIcon} className="size-4" />
+                Sign up using google
+              </button>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = `${
+                    import.meta.env.VITE_API_URL
+                  }auth/facebook`;
+                }}
+                className="text-sm bg-black rounded-lg text-white font-semibold  w-full p-2  inline-flex gap-2 items-center justify-center"
+              >
+                <img src={facebookIcon} className="size-4" />
+                Sign up using Facebook
+              </button>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = `${
+                    import.meta.env.VITE_API_URL
+                  }auth/github`;
+                }}
+                className="text-sm bg-black rounded-lg text-white font-semibold  w-full p-2  inline-flex gap-2 items-center justify-center"
+              >
+                <img src={githubLogo} className="size-5 " />
+                Sign up using Github
+              </button>
+            </div>
+          )}
         </form>
 
         {/* Footer Navigation */}
