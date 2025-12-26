@@ -24,7 +24,7 @@ authRoute.get(
       sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
       maxAge: 1 * 24 * 60 * 60 * 1000,
     });
-    res.redirect("http://localhost:5173/app");
+    res.redirect("https://frotend-resume.onrender.com//app");
   }
 );
 //---------------Facebook auth--------------------
@@ -51,7 +51,7 @@ authRoute.get(
       sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
       maxAge: 1 * 24 * 60 * 60 * 1000,
     });
-    res.redirect("http://localhost:5173/app");
+    res.redirect("https://frotend-resume.onrender.com/app");
   }
 );
 authRoute.get(
@@ -76,6 +76,6 @@ authRoute.get(
       sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
       maxAge: 1 * 24 * 60 * 60 * 1000,
     });
-    res.redirect("http://localhost:5173/app");
+    res.redirect("https://frotend-resume.onrender.com/app");
   }
 );
