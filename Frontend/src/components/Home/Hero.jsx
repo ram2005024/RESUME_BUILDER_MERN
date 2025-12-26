@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const Hero = () => {
@@ -9,11 +9,20 @@ const Hero = () => {
     "https://saasly.prebuiltui.com/assets/companies-logo/huawei.svg",
     "https://saasly.prebuiltui.com/assets/companies-logo/walmart.svg",
   ];
+  const [bar, setBar] = useState(false);
+  useEffect(() => {
+    if (bar) {
+      document.body.style.overflow = "hidden";
+    } else document.body.style.overflow = "auto";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [bar]);
   return (
     <div id="home">
       <>
         {/* Nav section */}
-        <nav className="z-50 flex items-center justify-between w-full py-4 px-6 md:px-16 lg:px-24 xl:px-40 text-sm">
+        <nav className="z-50 flex items-center justify-between w-full py-4 px-6 md:px-16 lg:px-24 xl:px-40 text-sm overflow-x-hidden">
           <a href="/">
             <img src="/logo.svg" alt="logo" className="h-10 w-auto" />
           </a>
@@ -50,8 +59,73 @@ const Hero = () => {
               Login
             </Link>
           </div>
+          {bar && (
+            <div className="fixed inset-0 z-50 md:hidden overflow-y-auto">
+              {/* Backdrop */}
+              <div
+                className="absolute inset-0 bg-black/60"
+                onClick={() => setBar(false)}
+              />
 
-          <button className="md:hidden active:scale-90 transition">
+              {/* Menu */}
+              <div
+                className="
+        absolute right-0 top-0
+        h-full w-72
+        bg-white
+        shadow-xl
+        p-6
+        flex flex-col gap-5
+        items-center
+        overflow-y-auto
+      "
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="26"
+                  height="26"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  onClick={() => setBar(false)}
+                  className="lucide lucide-menu absolute top-5 right-5 cursor-pointer"
+                >
+                  <path d="M4 5h16M4 12h16M4 19h16" />
+                </svg>
+                <a onClick={() => setBar(false)} href="#home">
+                  Home
+                </a>
+                <a onClick={() => setBar(false)} href="#features">
+                  Features
+                </a>
+                <a onClick={() => setBar(false)} href="#testimonials">
+                  Testimonials
+                </a>
+                <a onClick={() => setBar(false)} href="#cte">
+                  Contact
+                </a>
+
+                <Link
+                  to="/login?state=SignUp"
+                  className="mt-6 bg-green-500 w-full text-white text-center py-2 rounded-full"
+                >
+                  Get started
+                </Link>
+
+                <Link
+                  to="/login"
+                  className="border text-center w-full py-2 rounded-full hover:bg-gray-100"
+                >
+                  Login
+                </Link>
+              </div>
+            </div>
+          )}
+
+          <button
+            className="md:hidden active:scale-90 transition"
+            onClick={() => setBar((prev) => !prev)}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="26"

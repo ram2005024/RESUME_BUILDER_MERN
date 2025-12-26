@@ -30,6 +30,9 @@ const AssetContainer = ({ onChange, resume, id }) => {
         {
           resumeID: id,
           resumeData: { accent_color: code },
+        },
+        {
+          withCredentials: true,
         }
       );
       if (res.data.success) toast.success(res.data.message);
