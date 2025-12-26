@@ -24,7 +24,7 @@ authRoute.get(
       sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
       maxAge: 1 * 24 * 60 * 60 * 1000,
     });
-    res.redirect("https://frotend-resume.onrender.com//app");
+    res.redirect("https://frotend-resume.onrender.com/app");
   }
 );
 //---------------Facebook auth--------------------
