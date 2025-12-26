@@ -264,26 +264,30 @@ export const updateSkills = async (req, res) => {
 };
 //---------------------For image url------------------------
 export const uploadImage = async (req, res) => {
-  if (!req.file) return res.status(400).json({ message: "File missing" });
+  console.log("req.file:", req.file); // Debug: should not be undefined
+  console.log("req.body:", req.body);
+
+  if (!req.file) {
+    return res.status(400).json({ message: "Your request is missing file." });
+  }
 
   try {
     const response = await imagekit.files.upload({
       file: req.file.buffer,
-      fileName: req.body.resumeID + path.extname(req.file.originalname),
+      fileName: req.body.resumeID + ".jpg",
       folder: "user_resumes",
       transformation: {
-        pre:
-          "w-300,h-300,fo-face,z-0.75" +
-          (req.body.removeBG === "true" ? ",e-bgremove" : ""),
+        pre: req.body.removeBG === "true" ? "e-bgremove" : "",
       },
     });
 
     return res.json({
-      message: "Added image",
       success: true,
+      message: "Added image",
       imageURL: response.url,
     });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
+  } catch (err) {
+    console.log("ImageKit error:", err);
+    return res.status(500).json({ message: err.message });
   }
 };
