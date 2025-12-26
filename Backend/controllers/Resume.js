@@ -270,8 +270,8 @@ export const uploadImage = async (req, res) => {
     if (image) {
       console.log(image);
       const response = await imagekit.files.upload({
-        file: fs.createReadStream(image.path),
-        fileName: "resume.png",
+        file: req.file.buffer,
+        fileName: req.body.resumeID + path.extname(req.file.originalname),
         folder: "user_resumes",
         transformation: {
           pre:
