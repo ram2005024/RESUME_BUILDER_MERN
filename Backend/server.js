@@ -31,8 +31,13 @@ app.use(express.json());
 
 app.use(passport.initialize());
 app.use(allRoutes);
-//----------------------------
+app.set("trust proxy", 1);
 
+//----------------------------
+//----------Check if backend running
+app.get("/", (req, res) => {
+  res.send("Hello from server");
+});
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
