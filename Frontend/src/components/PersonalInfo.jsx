@@ -22,6 +22,7 @@ const PersonalInfo = ({
   setResume,
   resume,
   handleSave,
+  setIsDirty,
 }) => {
   const [disable, setDisable] = useState(false);
   const [file, setFile] = useState(null);
@@ -63,6 +64,7 @@ const PersonalInfo = ({
       toast.error("Failed to upload image");
     } finally {
       setLoading(false);
+      setIsDirty(true);
     }
   };
   const formFields = [
@@ -150,6 +152,7 @@ const PersonalInfo = ({
       toast.error("Error occured");
     } finally {
       setLoadingBGRemove(false);
+      setIsDirty(true);
     }
   };
   return (

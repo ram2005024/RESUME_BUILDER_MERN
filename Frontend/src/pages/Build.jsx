@@ -384,6 +384,7 @@ const Build = () => {
                     setRemoveBackground={setRemoveBackground}
                     setResume={setResume}
                     resume={resume}
+                    setIsDirty={setIsDirty}
                     onChange={(data) => {
                       setIsDirty(true);
                       setResume((prev) => ({ ...prev, personal_info: data }));
