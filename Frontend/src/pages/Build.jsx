@@ -225,6 +225,9 @@ const Build = () => {
             {
               id,
               resumeData: resume.skills,
+            },
+            {
+              withCredentials: true,
             }
           );
           if (res.data.success) {
@@ -474,6 +477,7 @@ const Build = () => {
                   <SkillsContainer
                     data={resume.skills}
                     setResume={setResume}
+                    setIsDirty={setIsDirty}
                     handleSave={handleSave}
                   />
                 )}

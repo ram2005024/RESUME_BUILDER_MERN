@@ -1,6 +1,6 @@
 import { PlusIcon, Sparkles, XIcon } from "lucide-react";
 import { useRef, useState } from "react";
-const SkillsContainer = ({ data, setResume, handleSave }) => {
+const SkillsContainer = ({ data, setResume, handleSave, setIsDirty }) => {
   const [skillName, setSkillName] = useState(null);
   const inputRef = useRef(null);
   return (
@@ -29,6 +29,7 @@ const SkillsContainer = ({ data, setResume, handleSave }) => {
               ...prev,
               skills: newSkill,
             }));
+            setIsDirty(true);
             setSkillName("");
             inputRef.current.value = "";
             inputRef.current.focus();
@@ -53,12 +54,13 @@ const SkillsContainer = ({ data, setResume, handleSave }) => {
                 <span className="text-indigo-900 font-light">{items}</span>
                 <XIcon
                   className="size-3 text-indigo-800 hover:text-red-600"
-                  onClick={() =>
+                  onClick={() => {
                     setResume((prev) => ({
                       ...prev,
                       skills: data.filter((_, i) => i !== index),
-                    }))
-                  }
+                    }));
+                    setIsDirty(true);
+                  }}
                 />
               </div>
             );

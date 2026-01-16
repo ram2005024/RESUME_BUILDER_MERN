@@ -253,7 +253,7 @@ export const updateSkills = async (req, res) => {
     });
 
     return res.json({
-      message: "Added skill",
+      message: "Saved successfully",
       success: true,
       skills: resume.skills,
     });
