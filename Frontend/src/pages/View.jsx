@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { dummyResumeData } from "../assets/assets";
 import Preview from "../components/Preview";
 import LoaderComponent from "../components/Loader";
 import { FileSearch, Home } from "lucide-react";
@@ -14,7 +13,10 @@ const View = () => {
   const loadResume = async () => {
     try {
       const res = await axios.get(
-        import.meta.env.VITE_API_URL + `resume/get/${resumeId}`
+        import.meta.env.VITE_API_URL + `resume/get/${resumeId}`,
+        {
+          withCredentials: true,
+        }
       );
       if (res.data.success) setResume(res.data.resume);
       setIsLoading(false);
