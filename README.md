@@ -40,6 +40,9 @@ This project was built to simulate **real industry-level development and deploym
 - **PostgreSQL**
 - **Prisma ORM**
 
+### Cloud Storage
+  - **Neon DB**
+
 ### AI & Automation
 - AI-powered resume content generation
 - Prompt-based smart resume assistance
@@ -152,5 +155,5 @@ Aspiring **Full Stack Engineer (MERN + PostgreSQL)**
 
 
 ⭐ If you like this project, feel free to star the repository!
-```
+
 
