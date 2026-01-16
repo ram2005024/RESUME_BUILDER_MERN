@@ -30,6 +30,7 @@ import axios from "axios";
 
 const Build = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
   const [isDirty, setIsDirty] = useState(false);
   const [resume, setResume] = useState({
     personal_info: {},
@@ -124,7 +125,7 @@ const Build = () => {
         }
       );
       if (res.data.success) {
-        toast.success(res.data.message);
+        setSaveMessage(res.data.message);
       }
     } catch (error) {
       setResume((prev) => ({ ...prev, public: !status }));
@@ -175,7 +176,7 @@ const Build = () => {
             experience: res.data.experience,
           }));
 
-          if (res.data.success) toast.success(res.data.message);
+          if (res.data.success) setSaveMessage(res.data.message);
         } catch (error) {
           console.log(error);
           toast.error(error.message);
@@ -192,7 +193,7 @@ const Build = () => {
           );
           if (res.data.success) {
             setResume((prev) => ({ ...prev, project: res.data.project }));
-            toast.success(res.data.message);
+            setSaveMessage(res.data.message);
           }
         } catch (error) {
           console.log(error);
@@ -210,7 +211,7 @@ const Build = () => {
           );
           if (res.data.success) {
             setResume((prev) => ({ ...prev, education: res.data.education }));
-            toast.success(res.data.message);
+            setSaveMessage(res.data.message);
           }
         } catch (error) {
           console.log(error);
@@ -227,7 +228,7 @@ const Build = () => {
             }
           );
           if (res.data.success) {
-            toast.success(res.data.message);
+            setSaveMessage(res.data.message);
             setResume((prev) => ({ ...prev, skills: res.data.skills }));
           }
         } catch (error) {
@@ -249,7 +250,8 @@ const Build = () => {
           }
         );
         if (res.data.success) {
-          toast.success(res.data.message);
+          setSaveMessage(res.data.message);
+
           setResume((prev) => ({ ...prev, ...res.data.resume }));
         }
       } catch (error) {
@@ -278,8 +280,24 @@ const Build = () => {
     resume.template,
     resume.accent_color,
   ]);
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      setSaveMessage("");
+    }, 3000);
+    return () => clearTimeout(timerId);
+  }, [saveMessage]);
   return (
     <div className="flex-1 bg-zinc-100">
+      {/* SHOW SAVED MESSAGE */}
+
+      <div
+        className={`absolute top-0 right-3 text-gray-400 text-sm transition-all duration-300 transform ${
+          saveMessage ? "translate-x-0 " : "translate-x-full "
+        }`}
+      >
+        {saveMessage}
+      </div>
+
       <div className="max-w-7xl mx-auto flex flex-col  py-5 relative">
         <div>
           <Link
