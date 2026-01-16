@@ -149,7 +149,7 @@ If you are looking for a passionate and hardworking **Full Stack Engineer**, I w
 ## 👨‍💻 Author
 
 **Ram Sharma**  
-Bachelor of Science (Computer Related Field)  
+Bachelor of Computer Science and IT(BSc. CSIT) 
 Aspiring **Full Stack Engineer (MERN + PostgreSQL)**
 
 
