@@ -1,5 +1,4 @@
 
-```md
 # 🚀 AI Resume Builder – Full Stack Application
 
 An **AI-powered Resume Builder** built using modern full stack technologies, designed to help users create professional resumes efficiently with the help of AI.
@@ -129,8 +128,8 @@ If you are looking for a passionate and hardworking **Full Stack Engineer**, I w
 
 ## 🔗 Live Project Links
 
-- 🌐 **Live Application**: _[Add your deployed app URL here]_
-- 🧑‍💻 **GitHub Repository**: _[This repository]_
+- 🌐 **Live Application**: https://resume-pern-frontend.vercel.app/
+- 🧑‍💻 **GitHub Repository**: https://github.com/ram2005024/RESUME_BUILDER_MERN
 
 ---
 
@@ -150,7 +149,7 @@ If you are looking for a passionate and hardworking **Full Stack Engineer**, I w
 Bachelor of Science (Computer Related Field)  
 Aspiring **Full Stack Engineer (MERN + PostgreSQL)**
 
----
+
 
 ⭐ If you like this project, feel free to star the repository!
 ```
