@@ -1,0 +1,6 @@
+# Ignore node_modules in both folders
+Frontend/node_modules/
+Backend/node_modules/
+
+# Ignore Prisma migrations in Backend
+Backend/prisma/migrations/
