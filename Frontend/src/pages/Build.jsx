@@ -30,7 +30,7 @@ import axios from "axios";
 
 const Build = () => {
   const [isOpen, setIsOpen] = useState(false);
-
+  const [isDirty, setIsDirty] = useState(false);
   const [resume, setResume] = useState({
     personal_info: {},
     professional_summary: "",
@@ -259,14 +259,16 @@ const Build = () => {
     }
   };
   useEffect(() => {
-    if (!id) return;
+    if (!isDirty || !id) return;
 
     const timer = setTimeout(() => {
       handleSave();
+      setIsDirty(false);
     }, 1000); // auto-save after 1 second
 
     return () => clearTimeout(timer); // cancel if user types again
   }, [
+    isDirty,
     resume.personal_info,
     resume.professional_summary,
     resume.experience,
@@ -364,9 +366,10 @@ const Build = () => {
                     setRemoveBackground={setRemoveBackground}
                     setResume={setResume}
                     resume={resume}
-                    onChange={(data) =>
-                      setResume((prev) => ({ ...prev, personal_info: data }))
-                    }
+                    onChange={(data) => {
+                      setIsDirty(true);
+                      setResume((prev) => ({ ...prev, personal_info: data }));
+                    }}
                     handleSave={handleSave}
                   />
                 )}
@@ -374,12 +377,13 @@ const Build = () => {
                   <PersonalSummary
                     data={resume.professional_summary}
                     setResume={setResume}
-                    onChange={(data) =>
+                    onChange={(data) => {
+                      setIsDirty(true);
                       setResume((prev) => ({
                         ...prev,
                         professional_summary: data,
-                      }))
-                    }
+                      }));
+                    }}
                     handleSave={handleSave}
                   />
                 )}
@@ -387,7 +391,8 @@ const Build = () => {
                   <ExperienceContainer
                     data={resume.experience}
                     setResume={setResume}
-                    onChange={(data, index) =>
+                    onChange={(data, index) => {
+                      setIsDirty(true);
                       setResume((prev) => {
                         const updatedExperience = [...prev.experience];
                         updatedExperience[index] = {
@@ -398,8 +403,8 @@ const Build = () => {
                           ...prev,
                           experience: updatedExperience,
                         };
-                      })
-                    }
+                      });
+                    }}
                     handleSave={handleSave}
                   />
                 )}
@@ -407,7 +412,8 @@ const Build = () => {
                   <ProjectContainer
                     data={resume.project}
                     setResume={setResume}
-                    onChange={(data, index) =>
+                    onChange={(data, index) => {
+                      setIsDirty(true);
                       setResume((prev) => {
                         const updatedProject = [...prev.project];
                         updatedProject[index] = {
@@ -418,8 +424,8 @@ const Build = () => {
                           ...prev,
                           project: updatedProject,
                         };
-                      })
-                    }
+                      });
+                    }}
                     handleSave={handleSave}
                   />
                 )}
@@ -427,7 +433,8 @@ const Build = () => {
                   <EducationContainer
                     data={resume.education}
                     setResume={setResume}
-                    onChange={(data, index) =>
+                    onChange={(data, index) => {
+                      setIsDirty(true);
                       setResume((prev) => {
                         const updatedEducation = [...prev.education];
                         updatedEducation[index] = {
@@ -438,8 +445,8 @@ const Build = () => {
                           ...prev,
                           education: updatedEducation,
                         };
-                      })
-                    }
+                      });
+                    }}
                     handleSave={handleSave}
                   />
                 )}
