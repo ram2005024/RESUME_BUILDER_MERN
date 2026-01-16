@@ -3,7 +3,13 @@ import { Sparkle, Sparkles } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 
-const PersonalSummary = ({ data, onChange, handleSave, setResume }) => {
+const PersonalSummary = ({
+  data,
+  onChange,
+  handleSave,
+  setResume,
+  setIsDirty,
+}) => {
   const [loading, setLoading] = useState(false);
   const handleEnhance = async () => {
     setLoading(true);
@@ -30,7 +36,10 @@ const PersonalSummary = ({ data, onChange, handleSave, setResume }) => {
       }));
       setLoading(false);
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message);
+      toast.error("Quota exceeded");
+      console.log(error);
+    } finally {
+      setIsDirty(true);
     }
   };
   return (

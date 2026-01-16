@@ -396,6 +396,7 @@ const Build = () => {
                   <PersonalSummary
                     data={resume.professional_summary}
                     setResume={setResume}
+                    setIsDirty={setIsDirty}
                     onChange={(data) => {
                       setIsDirty(true);
                       setResume((prev) => ({
