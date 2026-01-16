@@ -31,7 +31,7 @@ const View = () => {
   if (isLoading) return <LoaderComponent />;
   return (
     <>
-      {resume ? (
+      {resume.public ? (
         <div className="bg-slate-100   flex justify-center">
           <div className="max-w-3xl w-full sm:mt-4 sm:mb-4 m-3">
             <Preview
@@ -47,7 +47,9 @@ const View = () => {
             <FileSearch size={48} className="text-slate-400" />
           </div>
 
-          <h1 className="text-2xl font-bold tracking-tight">No resume found</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            No resume found or the user has made resume private
+          </h1>
           <p className="text-slate-500 mb-6">
             We couldn't find the file you're looking for.
           </p>
