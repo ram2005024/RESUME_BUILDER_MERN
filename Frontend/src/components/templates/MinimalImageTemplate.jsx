@@ -12,8 +12,8 @@ const MinimalImageTemplate = ({ data, accentColor }) => {
 
   return (
     <div className="max-w-5xl mx-auto bg-white text-zinc-800">
-      <div className="grid grid-cols-3">
-        <div className="col-span-1  py-10">
+      <div className="grid grid-cols-5">
+        <div className="col-span-2  py-10">
           {/* Image */}
           {data.personal_info?.image &&
           typeof data.personal_info.image === "string" ? (
@@ -48,7 +48,7 @@ const MinimalImageTemplate = ({ data, accentColor }) => {
         </div>
 
         {/* Left Sidebar */}
-        <aside className="col-span-1 border-r border-zinc-400 p-6 pt-0">
+        <aside className="col-span-2 border-r border-zinc-400 p-6 pt-0">
           {/* Contact */}
           <section className="mb-8">
             <h2 className="text-sm font-semibold tracking-widest text-zinc-600 mb-3">
@@ -63,7 +63,7 @@ const MinimalImageTemplate = ({ data, accentColor }) => {
               )}
               {data.personal_info?.email && (
                 <div className="flex items-center gap-2">
-                  <Mail size={14} style={{ color: accentColor }} />
+                  <Mail size={12} style={{ color: accentColor }} />
                   <span>{data.personal_info.email}</span>
                 </div>
               )}
@@ -112,7 +112,7 @@ const MinimalImageTemplate = ({ data, accentColor }) => {
         </aside>
 
         {/* Right Content */}
-        <main className="col-span-2 p-8 pt-0">
+        <main className="col-span-3 p-8 pt-0">
           {/* Summary */}
           {data.professional_summary && (
             <section className="mb-8">
