@@ -1,6 +1,7 @@
 import express from "express";
 import passport from "passport";
 import jwt from "jsonwebtoken";
+
 export const authRoute = express.Router();
 //------------Google auth---------------------
 authRoute.get(
@@ -21,10 +22,11 @@ authRoute.get(
     );
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
       maxAge: 1 * 24 * 60 * 60 * 1000,
     });
-    res.redirect("http://localhost:5173/app");
+    res.redirect(process.env.CLIENT_URL + "/app");
   }
 );
 //---------------Facebook auth--------------------
@@ -48,10 +50,11 @@ authRoute.get(
     );
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
       maxAge: 1 * 24 * 60 * 60 * 1000,
     });
-    res.redirect("http://localhost:5173/app");
+    res.redirect(process.env.CLIENT_URL + "/app");
   }
 );
 authRoute.get(
@@ -73,9 +76,10 @@ authRoute.get(
     );
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
       maxAge: 1 * 24 * 60 * 60 * 1000,
     });
-    res.redirect("http://localhost:5173/app");
+    res.redirect(process.env.CLIENT_URL + "/app");
   }
 );

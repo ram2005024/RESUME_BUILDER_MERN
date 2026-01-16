@@ -1,7 +1,6 @@
 import { prisma } from "../config/dbConfig.js";
 import imagekit from "../config/ImageKit.js";
 
-import fs from "fs";
 //------Get resume by userID--------------
 export const getResume = async (req, res) => {
   const id = req.userID;
@@ -264,13 +263,15 @@ export const updateSkills = async (req, res) => {
 };
 //---------------------For image url------------------------
 export const uploadImage = async (req, res) => {
-  const image = req.file;
-  console.log(req.body.removeBG);
+  const file = req.file;
+  const base64File = `data:${file.mimetype};base64,${file.buffer.toString(
+    "base64"
+  )}`;
+  console.log(base64File);
   try {
-    if (image) {
-      console.log(image);
+    if (file) {
       const response = await imagekit.files.upload({
-        file: fs.createReadStream(image.path),
+        file: base64File,
         fileName: "resume.png",
         folder: "user_resumes",
         transformation: {
@@ -287,6 +288,7 @@ export const uploadImage = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error);
     return res.json({ message: error.message });
   }
 };

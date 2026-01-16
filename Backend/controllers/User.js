@@ -24,7 +24,7 @@ export const registerController = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production" ? true : false,
+      secure: process.env.NODE_ENV === "production" ,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     return res.json({
@@ -56,7 +56,7 @@ export const loginController = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production" ? true : false,
+      secure: process.env.NODE_ENV === "production" ,
       maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 1 * 60 * 1000,
     });
     userExist.password = undefined;

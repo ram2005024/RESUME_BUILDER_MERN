@@ -30,7 +30,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:8000/auth/google/callback",
+      callbackURL: process.env.SERVER_URL + "/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, cb) => {
       try {
@@ -53,7 +53,7 @@ passport.use(
     {
       clientID: process.env.FACEBOOK_APP_ID,
       clientSecret: process.env.FACEBOOK_APP_SECRET,
-      callbackURL: "http://localhost:8000/auth/facebook/callback",
+      callbackURL: process.env.SERVER_URL + "/auth/google/callback",
       profileFields: ["id", "displayName", "email"],
     },
     async (accessToken, refreshToken, profile, cb) => {
@@ -78,7 +78,7 @@ passport.use(
     {
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: "http://localhost:8000/auth/github/callback",
+      callbackURL: process.env.SERVER_URL + "/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, cb) => {
       try {

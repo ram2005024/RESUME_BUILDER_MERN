@@ -44,40 +44,23 @@ export const generateResume = async (req, res) => {
       message: "Can't upload resume.Try again",
       success: false,
     });
-  const prompt = `You are a professional resume generator. 
+  console.log(fileText);
+  const prompt = `
+I have extracted the text from the pdf and i am providing text from that pdf and You are the one who make this into structured JSON.
 
-Input: a resume text or description of the person's profile.
-
-Task: Extract all information and structure it into JSON with the following keys:
+Instructions:
+- Analyze text and extract resume information.
+- Output ONLY a JSON object in the following format, starting from professional_summary:
 
 {
+  "professional_summary": "",
   "personal_info": {
-    "full_name": "",
+    "name": "",
     "email": "",
     "phone": "",
-    "location": "",
-    "linkedin": "",
-    "website": ""
+    "address": ""
   },
-  "professional_summary": "",
   "skills": [],
-  "experience": [
-    {
-      "company": "",
-      "position": "",
-      "start_date": "",
-      "end_date": "",
-      "description": "",
-      "is_current": true/false
-    }
-  ],
-  "project": [
-    {
-      "name": "",
-      "type": "",
-      "description": ""
-    }
-  ],
   "education": [
     {
       "institution": "",
@@ -86,15 +69,32 @@ Task: Extract all information and structure it into JSON with the following keys
       "graduation_date": "",
       "gpa": ""
     }
+  ],
+  "experience": [
+    {
+      "company": "",
+      "position": "",
+      "start_date": "",
+      "end_date": "",
+      "description": "",
+      "is_current": false
+    }
+  ],
+  "project": [
+    {
+      "name": "",
+      "type": "",
+      "description": ""
+    }
   ]
 }
 
 Rules:
-- Return valid JSON only.
-- Dates should be in "YYYY-MM" or "YYYY" format.
-- If any field is missing, use empty string or empty array.
-- Skills should be an array of strings.
-- Experience, education, and project can have multiple objects.
+- For date make it should fit the prisma create in date field .I should not get invalid date make date like date object no raw date.I should fit for datetime type.I will convert into format later
+- If the text contains resume data, fill the fields accurately.
+- If the text is random or fields are missing, leave them empty.
+- Do not output anything except the JSON object.
+- Do not add explanations, comments, or text outside the JSON.
 `;
   try {
     const response = await openai.chat.completions.create({
@@ -110,6 +110,7 @@ Rules:
         },
       ],
       response_format: { type: "json_object" },
+      temperature: 0.1,
     });
     const output = response.choices[0].message.content;
     console.log(output);
