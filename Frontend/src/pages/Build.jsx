@@ -258,7 +258,24 @@ const Build = () => {
       }
     }
   };
+  useEffect(() => {
+    if (!id) return;
 
+    const timer = setTimeout(() => {
+      handleSave();
+    }, 1000); // auto-save after 1 second
+
+    return () => clearTimeout(timer); // cancel if user types again
+  }, [
+    resume.personal_info,
+    resume.professional_summary,
+    resume.experience,
+    resume.project,
+    resume.education,
+    resume.skills,
+    resume.template,
+    resume.accent_color,
+  ]);
   return (
     <div className="flex-1 bg-zinc-100">
       <div className="max-w-7xl mx-auto flex flex-col  py-5 relative">
