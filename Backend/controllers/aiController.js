@@ -1,38 +1,53 @@
 import { prisma } from "../config/dbConfig.js";
 import { openai } from "../config/OpenAi.js";
+import { PDFParse } from "pdf-parse";
 
-//------For enhancing the text using OpenAI
+//------ Enhance text using OpenAI
 export const enhanceText = async (req, res) => {
   try {
     const { text } = req.body;
     const sendingText = text?.trim();
 
     if (!sendingText) {
-      return res.json({ message: "Please provide the text", success: false });
+      return res.json({
+        message: "Please provide the text",
+        success: false,
+      });
     }
 
     const response = await openai.chat.completions.create({
-      model: process.env.OPEN_AI_MODEL, // ✅ use OpenAI model from .env
+      model: process.env.OPEN_AI_MODEL,
       messages: [
         {
           role: "system",
           content:
-            "Summarize the following text into a concise, professional summary of 2–3 sentences. Highlight the person’s key skills, achievements, and professional identity in a way that sounds polished and suitable for a resume or LinkedIn profile. Avoid repetition and keep the tone confident and formal.",
+            "Summarize the following text into a concise, professional summary of 2–3 sentences. Highlight the person's key skills, achievements, and professional identity in a way that sounds polished and suitable for a resume or LinkedIn profile. Avoid repetition and keep the tone confident and formal.",
         },
         {
           role: "user",
-          content: text,
+          content: sendingText,
         },
       ],
     });
 
     const responseText = response.choices[0].message.content;
+
     console.log(responseText);
 
-    if (responseText) return res.json({ success: true, responseText });
-    return res.json({ success: false, message: "No response from OpenAI" });
+    if (!responseText) {
+      return res.json({
+        success: false,
+        message: "No response from OpenAI",
+      });
+    }
+
+    return res.json({
+      success: true,
+      responseText,
+    });
   } catch (error) {
-    console.error(error);
+    console.error("Enhance text error:", error);
+
     return res.json({
       message: "Failed to generate the enhanced text",
       success: false,
@@ -40,24 +55,68 @@ export const enhanceText = async (req, res) => {
   }
 };
 
-//-------------------------Handle file upload and convert to resume------------------
+//------ Upload PDF → Extract text → OpenAI → Create Resume
 export const generateResume = async (req, res) => {
-  const userID = req.userID;
-  const { title, fileText } = req.body;
+  try {
+    const userID = req.userID;
+    const { title } = req.body;
 
-  if (!userID || !fileText) {
-    console.log("USER ID:", userID);
-    console.log("FILE TEXT:", fileText);
+    // Check authentication
+    if (!userID) {
+      return res.status(401).json({
+        message: "Please login first",
+        success: false,
+      });
+    }
 
-    return res.json({
-      message: "Can't upload resume. Try again",
-      success: false,
+    // Check title
+    if (!title?.trim()) {
+      return res.json({
+        message: "Resume title is required",
+        success: false,
+      });
+    }
+
+    // Check uploaded file
+    if (!req.file) {
+      return res.json({
+        message: "Please upload a PDF file",
+        success: false,
+      });
+    }
+
+    // Get PDF buffer
+    const buffer = req.file.buffer;
+
+    // Extract text from PDF
+    const parser = new PDFParse({
+      data: buffer,
     });
-  }
 
-  const prompt = `
-I have extracted the text from the pdf and I am providing text from that pdf.
-You must convert it into structured JSON with this format:
+    const result = await parser.getText();
+
+    await parser.destroy();
+
+    const fileText = result.text?.trim();
+
+    console.log("FILE NAME:", req.file.originalname);
+    console.log("EXTRACTED TEXT:", fileText);
+    console.log("TEXT LENGTH:", fileText?.length);
+
+    // Make sure PDF contains text
+    if (!fileText) {
+      return res.json({
+        message:
+          "Could not extract text from this PDF. Please upload a text-based PDF.",
+        success: false,
+      });
+    }
+
+    // Prompt for OpenAI
+    const prompt = `
+I have extracted the text from a PDF resume.
+
+Convert the provided resume text into structured JSON using exactly this structure:
 
 {
   "professional_summary": "",
@@ -97,53 +156,90 @@ You must convert it into structured JSON with this format:
 }
 
 Rules:
-- Dates must be valid ISO date strings (fit Prisma datetime).
-- If data is missing, leave fields empty.
-- Output ONLY the JSON object, no explanations.
+- Return ONLY valid JSON.
+- Do not include markdown.
+- If information is missing, use an empty string or empty array.
+- Do not invent information.
+- Dates must be valid ISO date strings if a date is actually available.
+- If a date is unavailable, use an empty string.
 `;
 
-  try {
+    // Send extracted text to OpenAI
     const response = await openai.chat.completions.create({
-      model: process.env.OPEN_AI_MODEL, // ✅ use OpenAI model
+      model: process.env.OPEN_AI_MODEL,
       messages: [
-        { role: "system", content: prompt },
-        { role: "user", content: fileText },
+        {
+          role: "system",
+          content: prompt,
+        },
+        {
+          role: "user",
+          content: fileText,
+        },
       ],
-      response_format: { type: "json_object" },
+      response_format: {
+        type: "json_object",
+      },
       temperature: 0.1,
     });
 
     const output = response.choices[0].message.content;
-    console.log(output);
 
+    console.log("OPENAI OUTPUT:", output);
+
+    if (!output) {
+      return res.json({
+        message: "OpenAI did not return any response",
+        success: false,
+      });
+    }
+
+    // Convert JSON string → JavaScript object
     const resumeEntries = JSON.parse(output);
 
+    // Create resume in database
     const resume = await prisma.resume.create({
       data: {
         userID,
-        title,
+        title: title.trim(),
+
         skills: resumeEntries.skills ?? [],
+
         professional_summary: resumeEntries.professional_summary ?? "",
+
         personal_info: resumeEntries.personal_info ?? {},
+
         experience: resumeEntries.experience?.length
-          ? { create: resumeEntries.experience }
+          ? {
+              create: resumeEntries.experience,
+            }
           : undefined,
+
         project: resumeEntries.project?.length
-          ? { create: resumeEntries.project }
+          ? {
+              create: resumeEntries.project,
+            }
           : undefined,
+
         education: resumeEntries.education?.length
-          ? { create: resumeEntries.education }
+          ? {
+              create: resumeEntries.education,
+            }
           : undefined,
       },
     });
 
     return res.json({
-      message: "Uploaded successfully",
+      message: "Resume uploaded successfully",
       success: true,
       resume,
     });
   } catch (error) {
-    console.error(error);
-    return res.json({ message: error.message, success: false });
+    console.error("Generate resume error:", error);
+
+    return res.status(500).json({
+      message: error.message || "Failed to generate resume",
+      success: false,
+    });
   }
 };
