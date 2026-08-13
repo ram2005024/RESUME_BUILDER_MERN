@@ -273,22 +273,33 @@ export const uploadImage = async (req, res) => {
       });
     }
 
+    const removeBG = req.body.removeBG === "true";
+
+    console.log("=================================");
+    console.log("REMOVE BG:", removeBG);
+    console.log("FILE:", file.originalname);
+    console.log("TYPE:", file.mimetype);
+    console.log("SIZE:", file.size);
+    console.log("=================================");
+
     const base64File = `data:${file.mimetype};base64,${file.buffer.toString(
       "base64",
     )}`;
 
-    const removeBG = req.body.removeBG === "true";
+    const transformationString =
+      "w-300,h-300,fo-face,z-0.75" + (removeBG ? ",e-bgremove" : "");
 
-    console.log("REMOVE BG:", removeBG);
+    console.log("TRANSFORMATION:", transformationString);
 
     const response = await imagekit.files.upload({
       file: base64File,
+
       fileName: `resume-${Date.now()}.png`,
+
       folder: "user_resumes",
 
       transformation: {
-        pre: "w-300,h-300,fo-face,z-0.75" + (removeBG ? ",e-bgremove" : ""),
-        post: "f-png",
+        pre: transformationString,
       },
     });
 
@@ -296,7 +307,9 @@ export const uploadImage = async (req, res) => {
 
     return res.json({
       success: true,
-      message: removeBG ? "Background removed" : "Image uploaded",
+      message: removeBG
+        ? "Background removed successfully"
+        : "Image uploaded successfully",
       imageURL: response.url,
     });
   } catch (error) {
