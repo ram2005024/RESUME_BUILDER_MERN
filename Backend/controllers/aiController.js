@@ -46,6 +46,9 @@ export const generateResume = async (req, res) => {
   const { title, fileText } = req.body;
 
   if (!userID || !fileText) {
+    console.log("USER ID:", userID);
+    console.log("FILE TEXT:", fileText);
+
     return res.json({
       message: "Can't upload resume. Try again",
       success: false,
