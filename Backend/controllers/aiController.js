@@ -1,7 +1,8 @@
 import { prisma } from "../config/dbConfig.js";
 import { groq } from "../config/Groq.js";
 import { PDFParse } from "pdf-parse";
-import { pdf } from "pdf-to-img";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import { createCanvas } from "canvas";
 import { createWorker } from "tesseract.js";
 
 // ======================================================
@@ -17,32 +18,81 @@ const extractTextWithOCR = async (buffer) => {
 
   const worker = await createWorker("eng");
 
-  let extractedText = "";
-
   try {
-    // Convert PDF buffer into PDF pages
-    const document = await pdf(buffer);
+    // --------------------------------------------------
+    // Load PDF using pdfjs-dist
+    // --------------------------------------------------
 
-    let pageNumber = 0;
+    const pdfDocument = await pdfjsLib.getDocument({
+      data: new Uint8Array(buffer),
+    }).promise;
 
-    // pdf-to-img gives us each page as an image
-    for await (const page of document) {
-      pageNumber++;
+    console.log("PDF PAGES:", pdfDocument.numPages);
 
+    let extractedText = "";
+
+    // --------------------------------------------------
+    // Process every page
+    // --------------------------------------------------
+
+    for (let pageNumber = 1; pageNumber <= pdfDocument.numPages; pageNumber++) {
       console.log(`OCR PROCESSING PAGE ${pageNumber}...`);
 
-      // Convert page into Buffer
-      const imageBuffer = Buffer.from(page);
+      const page = await pdfDocument.getPage(pageNumber);
 
-      // OCR the page
-      const {
-        data: { text },
-      } = await worker.recognize(imageBuffer);
+      // Higher scale = better OCR quality
+      const viewport = page.getViewport({
+        scale: 2,
+      });
+
+      // ------------------------------------------------
+      // Create canvas
+      // ------------------------------------------------
+
+      const canvas = createCanvas(
+        Math.ceil(viewport.width),
+        Math.ceil(viewport.height),
+      );
+
+      const context = canvas.getContext("2d");
+
+      // ------------------------------------------------
+      // Render PDF page → canvas
+      // ------------------------------------------------
+
+      await page.render({
+        canvasContext: context,
+        viewport,
+      }).promise;
+
+      // ------------------------------------------------
+      // Canvas → PNG Buffer
+      // ------------------------------------------------
+
+      const imageBuffer = canvas.toBuffer("image/png");
+
+      console.log(`PAGE ${pageNumber} IMAGE SIZE: ${imageBuffer.length} bytes`);
+
+      // ------------------------------------------------
+      // OCR
+      // ------------------------------------------------
+
+      const result = await worker.recognize(imageBuffer);
+
+      const text = result.data.text || "";
+
+      console.log(`PAGE ${pageNumber} OCR TEXT LENGTH: ${text.length}`);
+
+      console.log("---------------------------------");
+      console.log(text);
+      console.log("---------------------------------");
 
       extractedText += text + "\n";
 
-      console.log(`PAGE ${pageNumber} OCR TEXT LENGTH: ${text?.length || 0}`);
+      page.cleanup();
     }
+
+    await pdfDocument.destroy();
 
     return extractedText.trim();
   } finally {
@@ -115,14 +165,18 @@ export const enhanceText = async (req, res) => {
 };
 
 // ======================================================
-// UPLOAD PDF → TEXT/OCR → GROQ → CREATE RESUME
+// UPLOAD PDF
+// → NORMAL TEXT EXTRACTION
+// → OCR FALLBACK
+// → GROQ
+// → PRISMA
 // ======================================================
 
 export const generateResume = async (req, res) => {
   try {
-    // --------------------------------------------------
+    // ==================================================
     // 1. AUTHENTICATION
-    // --------------------------------------------------
+    // ==================================================
 
     const userID = req.userID;
 
@@ -133,9 +187,9 @@ export const generateResume = async (req, res) => {
       });
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // 2. TITLE
-    // --------------------------------------------------
+    // ==================================================
 
     const { title } = req.body;
 
@@ -146,9 +200,9 @@ export const generateResume = async (req, res) => {
       });
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // 3. FILE
-    // --------------------------------------------------
+    // ==================================================
 
     if (!req.file) {
       return res.status(400).json({
@@ -165,9 +219,9 @@ export const generateResume = async (req, res) => {
     console.log("FILE TYPE:", req.file.mimetype);
     console.log("=================================");
 
-    // --------------------------------------------------
-    // 4. TRY NORMAL PDF TEXT EXTRACTION FIRST
-    // --------------------------------------------------
+    // ==================================================
+    // 4. NORMAL PDF TEXT EXTRACTION
+    // ==================================================
 
     let fileText = "";
 
@@ -184,18 +238,41 @@ export const generateResume = async (req, res) => {
 
       fileText = result.text?.trim() || "";
 
+      console.log("=================================");
       console.log("NORMAL PDF TEXT LENGTH:", fileText.length);
-      console.log("NORMAL PDF TEXT:", fileText);
+      console.log("NORMAL PDF TEXT:");
+      console.log(fileText);
+      console.log("=================================");
     } catch (error) {
       console.error("Normal PDF extraction failed:", error.message);
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // 5. OCR FALLBACK
-    // --------------------------------------------------
+    // ==================================================
 
-    // If PDF parser doesn't find meaningful text,
-    // use OCR.
+    /*
+      If normal PDF extraction gives almost nothing,
+      assume the PDF is scanned/image-based.
+
+      Example:
+
+      PDF
+       ↓
+      pdf-parse
+       ↓
+      only "-- 1 of 2 --"
+       ↓
+      NOT ENOUGH TEXT
+       ↓
+      pdfjs-dist
+       ↓
+      image
+       ↓
+      Tesseract
+       ↓
+      actual resume text
+    */
 
     if (fileText.length < 100) {
       console.log("Not enough text extracted. Switching to OCR...");
@@ -209,9 +286,9 @@ export const generateResume = async (req, res) => {
       console.log("=================================");
     }
 
-    // --------------------------------------------------
-    // 6. STILL NO TEXT?
-    // --------------------------------------------------
+    // ==================================================
+    // 6. CHECK FINAL TEXT
+    // ==================================================
 
     if (!fileText || fileText.length < 20) {
       return res.status(400).json({
@@ -220,15 +297,16 @@ export const generateResume = async (req, res) => {
       });
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // 7. GROQ PROMPT
-    // --------------------------------------------------
+    // ==================================================
 
     const prompt = `
 You are a professional resume parser.
 
-Extract information from the provided resume text and return
-ONLY valid JSON.
+Extract information from the provided resume text.
+
+Return ONLY valid JSON.
 
 Use EXACTLY this structure:
 
@@ -275,23 +353,27 @@ RULES:
 2. Do not return markdown.
 3. Do not return explanations.
 4. Do not invent information.
-5. If information is missing, use an empty string.
-6. If an array has no information, return [].
-7. skills must be an array of strings.
-8. education must be an array.
-9. experience must be an array.
-10. project must be an array.
-11. is_current must be true or false.
-12. Preserve the actual information from the resume.
-13. Do not hallucinate dates, companies, skills, or education.
+5. Preserve the actual information from the resume.
+6. If information is missing, use an empty string.
+7. If an array has no information, return [].
+8. skills must be an array of strings.
+9. education must be an array.
+10. experience must be an array.
+11. project must be an array.
+12. is_current must be true or false.
+13. Do not hallucinate dates.
+14. Do not hallucinate companies.
+15. Do not hallucinate skills.
+16. Do not hallucinate education.
 `;
 
-    // --------------------------------------------------
+    // ==================================================
     // 8. SEND TO GROQ
-    // --------------------------------------------------
+    // ==================================================
 
     console.log("=================================");
     console.log("SENDING RESUME TEXT TO GROQ...");
+    console.log("TEXT LENGTH:", fileText.length);
     console.log("=================================");
 
     const response = await groq.chat.completions.create({
@@ -315,9 +397,9 @@ RULES:
       },
     });
 
-    // --------------------------------------------------
+    // ==================================================
     // 9. GROQ OUTPUT
-    // --------------------------------------------------
+    // ==================================================
 
     const output = response.choices[0]?.message?.content;
 
@@ -333,9 +415,9 @@ RULES:
       });
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // 10. PARSE JSON
-    // --------------------------------------------------
+    // ==================================================
 
     let resumeEntries;
 
@@ -350,9 +432,9 @@ RULES:
       });
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // 11. SAVE TO DATABASE
-    // --------------------------------------------------
+    // ==================================================
 
     const resume = await prisma.resume.create({
       data: {
@@ -360,28 +442,31 @@ RULES:
 
         title: title.trim(),
 
-        skills: resumeEntries.skills ?? [],
+        skills: Array.isArray(resumeEntries.skills) ? resumeEntries.skills : [],
 
-        professional_summary: resumeEntries.professional_summary ?? "",
+        professional_summary: resumeEntries.professional_summary || "",
 
-        personal_info: resumeEntries.personal_info ?? {},
+        personal_info: resumeEntries.personal_info || {},
 
         experience:
-          resumeEntries.experience?.length > 0
+          Array.isArray(resumeEntries.experience) &&
+          resumeEntries.experience.length > 0
             ? {
                 create: resumeEntries.experience,
               }
             : undefined,
 
         project:
-          resumeEntries.project?.length > 0
+          Array.isArray(resumeEntries.project) &&
+          resumeEntries.project.length > 0
             ? {
                 create: resumeEntries.project,
               }
             : undefined,
 
         education:
-          resumeEntries.education?.length > 0
+          Array.isArray(resumeEntries.education) &&
+          resumeEntries.education.length > 0
             ? {
                 create: resumeEntries.education,
               }
@@ -389,9 +474,14 @@ RULES:
       },
     });
 
-    // --------------------------------------------------
+    // ==================================================
     // 12. SUCCESS
-    // --------------------------------------------------
+    // ==================================================
+
+    console.log("=================================");
+    console.log("RESUME CREATED SUCCESSFULLY");
+    console.log("RESUME ID:", resume.id);
+    console.log("=================================");
 
     return res.status(201).json({
       message: "Resume uploaded successfully",
