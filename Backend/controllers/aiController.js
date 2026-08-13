@@ -1,21 +1,21 @@
 import { prisma } from "../config/dbConfig.js";
 import { openai } from "../config/OpenAi.js";
-//------For enhancing the text using ai
+
+//------For enhancing the text using OpenAI
 export const enhanceText = async (req, res) => {
   try {
     const { text } = req.body;
-
-    const sendingText = text.trim();
-
-    if (!sendingText)
+    if (!text?.trim()) {
       return res.json({ message: "Please provide the text", success: false });
+    }
+
     const response = await openai.chat.completions.create({
       model: process.env.OPEN_AI_MODEL,
       messages: [
         {
           role: "system",
           content:
-            "Summarize the following text into a concise, professional summary of 2–3 sentences.Highlight the person’s key skills, achievements, and professional identity in a way that sounds polished and suitable for a resume or LinkedIn profile. Avoid repetition and keep the tone confident and formal.",
+            "Summarize the following text into a concise, professional summary of 2–3 sentences. Highlight the person’s key skills, achievements, and professional identity in a way that sounds polished and suitable for a resume or LinkedIn profile. Avoid repetition and keep the tone confident and formal.",
         },
         {
           role: "user",
@@ -26,31 +26,33 @@ export const enhanceText = async (req, res) => {
 
     const responseText = response.choices[0].message.content;
     console.log(responseText);
+
     if (responseText) return res.json({ success: true, responseText });
+    return res.json({ success: false, message: "No response from OpenAI" });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.json({
       message: "Failed to generate the enhanced text",
       success: false,
     });
   }
 };
-//-------------------------Handle file uplaod and convert to resume------------------
+
+//-------------------------Handle file upload and convert to resume------------------
 export const generateResume = async (req, res) => {
   const userID = req.userID;
   const { title, fileText } = req.body;
-  if (!userID && !fileText)
+
+  if (!userID || !fileText) {
     return res.json({
-      message: "Can't upload resume.Try again",
+      message: "Can't upload resume. Try again",
       success: false,
     });
-  console.log(fileText);
-  const prompt = `
-I have extracted the text from the pdf and i am providing text from that pdf and You are the one who make this into structured JSON.
+  }
 
-Instructions:
-- Analyze text and extract resume information.
-- Output ONLY a JSON object in the following format, starting from professional_summary:
+  const prompt = `
+I have extracted the text from the pdf and I am providing text from that pdf.
+You must convert it into structured JSON with this format:
 
 {
   "professional_summary": "",
@@ -90,35 +92,31 @@ Instructions:
 }
 
 Rules:
-- For date make it should fit the prisma create in date field .I should not get invalid date make date like date object no raw date.I should fit for datetime type.I will convert into format later
-- If the text contains resume data, fill the fields accurately.
-- If the text is random or fields are missing, leave them empty.
-- Do not output anything except the JSON object.
-- Do not add explanations, comments, or text outside the JSON.
+- Dates must be valid ISO date strings (fit Prisma datetime).
+- If data is missing, leave fields empty.
+- Output ONLY the JSON object, no explanations.
 `;
+
   try {
     const response = await openai.chat.completions.create({
-      model: process.env.GEMINI_MODEL,
+      model: process.env.OPEN_AI_MODEL,
       messages: [
-        {
-          role: "system",
-          content: prompt,
-        },
-        {
-          role: "user",
-          content: fileText,
-        },
+        { role: "system", content: prompt },
+        { role: "user", content: fileText },
       ],
       response_format: { type: "json_object" },
       temperature: 0.1,
     });
+
     const output = response.choices[0].message.content;
     console.log(output);
+
     const resumeEntries = JSON.parse(output);
+
     const resume = await prisma.resume.create({
       data: {
-        userID: userID,
-        title: title,
+        userID,
+        title,
         skills: resumeEntries.skills ?? [],
         professional_summary: resumeEntries.professional_summary ?? "",
         personal_info: resumeEntries.personal_info ?? {},
@@ -133,13 +131,14 @@ Rules:
           : undefined,
       },
     });
+
     return res.json({
       message: "Uploaded successfully",
       success: true,
       resume,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.json({ message: error.message, success: false });
   }
 };
