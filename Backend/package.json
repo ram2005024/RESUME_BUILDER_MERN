@@ -17,6 +17,7 @@
     "@napi-rs/canvas": "^1.0.5",
     "@prisma/client": "^6.3.1",
     "bcryptjs": "^3.0.3",
+    "canvas": "^3.2.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
