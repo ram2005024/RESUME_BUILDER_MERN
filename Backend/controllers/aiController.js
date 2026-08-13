@@ -5,12 +5,14 @@ import { openai } from "../config/OpenAi.js";
 export const enhanceText = async (req, res) => {
   try {
     const { text } = req.body;
-    if (!text?.trim()) {
+    const sendingText = text?.trim();
+
+    if (!sendingText) {
       return res.json({ message: "Please provide the text", success: false });
     }
 
     const response = await openai.chat.completions.create({
-      model: process.env.OPEN_AI_MODEL,
+      model: process.env.OPEN_AI_MODEL, // ✅ use OpenAI model from .env
       messages: [
         {
           role: "system",
@@ -99,7 +101,7 @@ Rules:
 
   try {
     const response = await openai.chat.completions.create({
-      model: process.env.OPEN_AI_MODEL,
+      model: process.env.OPEN_AI_MODEL, // ✅ use OpenAI model
       messages: [
         { role: "system", content: prompt },
         { role: "user", content: fileText },
