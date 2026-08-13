@@ -89,12 +89,15 @@ const DashBoard = () => {
   };
   const handleUploadResume = async (e) => {
     e.preventDefault();
+
     try {
       setLoading(true);
+
       const formData = new FormData();
 
       formData.append("title", title);
       formData.append("file", uploadFile);
+
       const res = await axios.post(
         import.meta.env.VITE_API_URL + "ai/generateResume",
         formData,
@@ -102,23 +105,32 @@ const DashBoard = () => {
           withCredentials: true,
         },
       );
+
       if (!res.data.success) {
         toast.error(res.data.message);
+
         setTitle("");
         setIsUploadResume(false);
         setUploadFile(null);
 
         return;
       }
+
       toast.success(res.data.message);
+
       setTitle("");
       setIsUploadResume(false);
       setUploadFile(null);
 
       navigate(`/app/build/${res.data.resume.id}`);
     } catch (error) {
-      console.log(error);
-      toast.error(error.message);
+      console.error("Generate resume error:", error);
+
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to generate resume",
+      );
     } finally {
       setLoading(false);
     }
