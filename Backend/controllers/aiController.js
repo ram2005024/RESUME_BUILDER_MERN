@@ -1,3 +1,85 @@
+import { prisma } from "../config/dbConfig.js";
+import { groq } from "../config/Groq.js";
+
+// ======================================================
+// ENHANCE TEXT
+// ======================================================
+
+export const enhanceText = async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    const sendingText = text?.trim();
+
+    if (!sendingText) {
+      return res.status(400).json({
+        message: "Please provide the text",
+        success: false,
+      });
+    }
+
+    const response = await groq.chat.completions.create({
+      model: process.env.GROQ_MODEL,
+
+      messages: [
+        {
+          role: "system",
+          content:
+            "Summarize the following text into a concise, professional summary of 2–3 sentences. Highlight the person's key skills, achievements, and professional identity in a way that sounds polished and suitable for a resume or LinkedIn profile. Avoid repetition and keep the tone confident and formal.",
+        },
+        {
+          role: "user",
+          content: sendingText,
+        },
+      ],
+
+      temperature: 0.2,
+    });
+
+    const responseText = response.choices[0]?.message?.content;
+
+    console.log("GROQ RESPONSE:", responseText);
+
+    if (!responseText) {
+      return res.status(500).json({
+        message: "No response from Groq",
+        success: false,
+      });
+    }
+
+    return res.json({
+      success: true,
+      responseText,
+    });
+  } catch (error) {
+    console.error("Enhance text error:", error);
+
+    return res.status(error.status || 500).json({
+      message: error.message || "Failed to generate enhanced text",
+      success: false,
+    });
+  }
+};
+
+// ======================================================
+// GENERATE RESUME
+//
+// FRONTEND
+// PDF
+//   ↓
+// PDF.js
+//   ↓
+// extractedText
+//   ↓
+// POST { text, title }
+//   ↓
+// THIS CONTROLLER
+//   ↓
+// GROQ
+//   ↓
+// PRISMA
+// ======================================================
+
 export const generateResume = async (req, res) => {
   try {
     // ==================================================
@@ -126,7 +208,7 @@ RULES:
 `;
 
     // ==================================================
-    // 6. SEND TEXT TO GROQ
+    // 6. SEND RESUME TEXT TO GROQ
     // ==================================================
 
     console.log("=================================");
@@ -247,6 +329,10 @@ RULES:
       resume,
     });
   } catch (error) {
+    // ==================================================
+    // 11. ERROR
+    // ==================================================
+
     console.error("Generate resume error:", error);
 
     return res.status(error.status || 500).json({
