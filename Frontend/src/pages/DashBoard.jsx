@@ -91,31 +91,13 @@ const DashBoard = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      console.log("FILE:", uploadFile);
-      console.log("FILE NAME:", uploadFile?.name);
-      console.log("FILE SIZE:", uploadFile?.size);
-      console.log("FILE TYPE:", uploadFile?.type);
+      const formData = new FormData();
 
-      const textPDF = await pdfToText(uploadFile);
-
-      console.log("TEXT:", textPDF);
-      console.log("LENGTH:", textPDF.length);
-
-      if (!textPDF.trim()) {
-        toast.error("No text could be extracted from this PDF");
-        return;
-      }
-      console.log("========== PDF RESULT ==========");
-      console.log("TEXT:", textPDF);
-      console.log("TEXT LENGTH:", textPDF?.length);
-      console.log("================================");
-      console.log(textPDF);
+      formData.append("title", title);
+      formData.append("file", uploadFile);
       const res = await axios.post(
         import.meta.env.VITE_API_URL + "ai/generateResume",
-        {
-          title,
-          fileText: textPDF,
-        },
+        formData,
         {
           withCredentials: true,
         },
