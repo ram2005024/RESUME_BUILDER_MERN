@@ -18,21 +18,24 @@ const extractTextWithOCR = async (buffer) => {
 
   const worker = await createWorker("eng");
 
+  let extractedText = "";
+
   try {
     // --------------------------------------------------
-    // Load PDF using pdfjs-dist
+    // LOAD PDF
     // --------------------------------------------------
 
-    const pdfDocument = await pdfjsLib.getDocument({
+    const loadingTask = pdfjsLib.getDocument({
       data: new Uint8Array(buffer),
-    }).promise;
+      disableWorker: true,
+    });
+
+    const pdfDocument = await loadingTask.promise;
 
     console.log("PDF PAGES:", pdfDocument.numPages);
 
-    let extractedText = "";
-
     // --------------------------------------------------
-    // Process every page
+    // PROCESS EACH PAGE
     // --------------------------------------------------
 
     for (let pageNumber = 1; pageNumber <= pdfDocument.numPages; pageNumber++) {
@@ -40,13 +43,13 @@ const extractTextWithOCR = async (buffer) => {
 
       const page = await pdfDocument.getPage(pageNumber);
 
-      // Higher scale = better OCR quality
+      // Higher scale = better OCR
       const viewport = page.getViewport({
         scale: 2,
       });
 
       // ------------------------------------------------
-      // Create canvas
+      // CREATE CANVAS
       // ------------------------------------------------
 
       const canvas = createCanvas(
@@ -57,7 +60,7 @@ const extractTextWithOCR = async (buffer) => {
       const context = canvas.getContext("2d");
 
       // ------------------------------------------------
-      // Render PDF page → canvas
+      // RENDER PDF PAGE → CANVAS
       // ------------------------------------------------
 
       await page.render({
@@ -66,7 +69,7 @@ const extractTextWithOCR = async (buffer) => {
       }).promise;
 
       // ------------------------------------------------
-      // Canvas → PNG Buffer
+      // CANVAS → PNG
       // ------------------------------------------------
 
       const imageBuffer = canvas.toBuffer("image/png");
@@ -95,6 +98,10 @@ const extractTextWithOCR = async (buffer) => {
     await pdfDocument.destroy();
 
     return extractedText.trim();
+  } catch (error) {
+    console.error("OCR ERROR:", error);
+
+    throw error;
   } finally {
     await worker.terminate();
 
@@ -250,29 +257,6 @@ export const generateResume = async (req, res) => {
     // ==================================================
     // 5. OCR FALLBACK
     // ==================================================
-
-    /*
-      If normal PDF extraction gives almost nothing,
-      assume the PDF is scanned/image-based.
-
-      Example:
-
-      PDF
-       ↓
-      pdf-parse
-       ↓
-      only "-- 1 of 2 --"
-       ↓
-      NOT ENOUGH TEXT
-       ↓
-      pdfjs-dist
-       ↓
-      image
-       ↓
-      Tesseract
-       ↓
-      actual resume text
-    */
 
     if (fileText.length < 100) {
       console.log("Not enough text extracted. Switching to OCR...");
