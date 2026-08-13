@@ -287,7 +287,10 @@ export const uploadImage = async (req, res) => {
       folder: "user_resumes",
 
       transformation: {
-        pre: "w-300,h-300,fo-face,z-0.75" + (removeBG ? ",e-bgremove" : ""),
+        pre:
+          "w-300,h-300,fo-face,z-0.75" +
+          (req.body.removeBG === "true" ? ",e-bgremove" : ""),
+        post: "f-png",
       },
     });
 
