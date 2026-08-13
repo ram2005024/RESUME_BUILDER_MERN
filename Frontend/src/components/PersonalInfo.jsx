@@ -45,7 +45,7 @@ const PersonalInfo = ({
         {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
-        }
+        },
       );
       if (res.data.success) {
         toast.success(res.data.message);
@@ -70,7 +70,7 @@ const PersonalInfo = ({
   const formFields = [
     {
       label: "Full name",
-      key: "full_name",
+      key: "name",
       required: true,
       logo: User,
       type: "text",
@@ -133,7 +133,7 @@ const PersonalInfo = ({
         {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
-        }
+        },
       );
       if (res.data.success) {
         toast.success("Removed background");

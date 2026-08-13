@@ -64,7 +64,7 @@ const Build = () => {
         import.meta.env.VITE_API_URL + `resume/get/${id}`,
         {
           withCredentials: true,
-        }
+        },
       );
       const resumee = res.data.resume;
       if (resumee)
@@ -122,7 +122,7 @@ const Build = () => {
         { resumeID: id, resumeData: { public: status } },
         {
           withCredentials: true,
-        }
+        },
       );
       if (res.data.success) {
         setSaveMessage(res.data.message);
@@ -169,7 +169,7 @@ const Build = () => {
             { resumeID: id, resumeData: resume.experience },
             {
               withCredentials: true,
-            }
+            },
           );
           setResume((prev) => ({
             ...prev,
@@ -189,7 +189,7 @@ const Build = () => {
             { resumeID: id, resumeData: resume.project },
             {
               withCredentials: true,
-            }
+            },
           );
           if (res.data.success) {
             setResume((prev) => ({ ...prev, project: res.data.project }));
@@ -207,7 +207,7 @@ const Build = () => {
             { resumeID: id, resumeData: resume.education },
             {
               withCredentials: true,
-            }
+            },
           );
           if (res.data.success) {
             setResume((prev) => ({ ...prev, education: res.data.education }));
@@ -228,7 +228,7 @@ const Build = () => {
             },
             {
               withCredentials: true,
-            }
+            },
           );
           if (res.data.success) {
             setSaveMessage(res.data.message);
@@ -250,7 +250,7 @@ const Build = () => {
           { resumeID: id, resumeData: resumeData },
           {
             withCredentials: true,
-          }
+          },
         );
         if (res.data.success) {
           setSaveMessage(res.data.message);
@@ -365,7 +365,7 @@ const Build = () => {
                     disabled={activeSectionIndex === sections.length - 1}
                     onClick={() =>
                       setActiveSectionIndex((prev) =>
-                        Math.min(prev + 1, sections.length - 1)
+                        Math.min(prev + 1, sections.length - 1),
                       )
                     }
                     className={`inline-flex items-center gap-1.5 rounded-sm p-3 hover:bg-gray-200 text-gray-500  hover:text-gray-600 transition-all duration-200 ${
