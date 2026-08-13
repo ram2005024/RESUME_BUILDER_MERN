@@ -4,9 +4,4 @@ import { enhanceText, generateResume } from "../controllers/aiController.js";
 import { upload } from "./../config/multer.js";
 export const aiRoute = express.Router();
 aiRoute.post("/enhanceText", protectUserAuth, enhanceText);
-aiRoute.post(
-  "/generateResume",
-  protectUserAuth,
-  upload.single("file"),
-  generateResume,
-);
+aiRoute.post("/generateResume", protectUserAuth, generateResume);

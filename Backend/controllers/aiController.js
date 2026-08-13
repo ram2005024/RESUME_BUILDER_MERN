@@ -1,184 +1,3 @@
-import { prisma } from "../config/dbConfig.js";
-import { groq } from "../config/Groq.js";
-import { PDFParse } from "pdf-parse";
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
-import { createCanvas } from "canvas";
-import { createWorker } from "tesseract.js";
-
-// ======================================================
-// OCR FALLBACK
-// PDF → IMAGE → OCR → TEXT
-// ======================================================
-
-const extractTextWithOCR = async (buffer) => {
-  console.log("=================================");
-  console.log("TEXT EXTRACTION FAILED");
-  console.log("STARTING OCR...");
-  console.log("=================================");
-
-  const worker = await createWorker("eng");
-
-  let extractedText = "";
-
-  try {
-    // --------------------------------------------------
-    // LOAD PDF
-    // --------------------------------------------------
-
-    const loadingTask = pdfjsLib.getDocument({
-      data: new Uint8Array(buffer),
-      disableWorker: true,
-    });
-
-    const pdfDocument = await loadingTask.promise;
-
-    console.log("PDF PAGES:", pdfDocument.numPages);
-
-    // --------------------------------------------------
-    // PROCESS EACH PAGE
-    // --------------------------------------------------
-
-    for (let pageNumber = 1; pageNumber <= pdfDocument.numPages; pageNumber++) {
-      console.log(`OCR PROCESSING PAGE ${pageNumber}...`);
-
-      const page = await pdfDocument.getPage(pageNumber);
-
-      // Higher scale = better OCR
-      const viewport = page.getViewport({
-        scale: 2,
-      });
-
-      // ------------------------------------------------
-      // CREATE CANVAS
-      // ------------------------------------------------
-
-      const canvas = createCanvas(
-        Math.ceil(viewport.width),
-        Math.ceil(viewport.height),
-      );
-
-      const context = canvas.getContext("2d");
-
-      // ------------------------------------------------
-      // RENDER PDF PAGE → CANVAS
-      // ------------------------------------------------
-
-      await page.render({
-        canvasContext: context,
-        viewport,
-      }).promise;
-
-      // ------------------------------------------------
-      // CANVAS → PNG
-      // ------------------------------------------------
-
-      const imageBuffer = canvas.toBuffer("image/png");
-
-      console.log(`PAGE ${pageNumber} IMAGE SIZE: ${imageBuffer.length} bytes`);
-
-      // ------------------------------------------------
-      // OCR
-      // ------------------------------------------------
-
-      const result = await worker.recognize(imageBuffer);
-
-      const text = result.data.text || "";
-
-      console.log(`PAGE ${pageNumber} OCR TEXT LENGTH: ${text.length}`);
-
-      console.log("---------------------------------");
-      console.log(text);
-      console.log("---------------------------------");
-
-      extractedText += text + "\n";
-
-      page.cleanup();
-    }
-
-    await pdfDocument.destroy();
-
-    return extractedText.trim();
-  } catch (error) {
-    console.error("OCR ERROR:", error);
-
-    throw error;
-  } finally {
-    await worker.terminate();
-
-    console.log("=================================");
-    console.log("OCR FINISHED");
-    console.log("=================================");
-  }
-};
-
-// ======================================================
-// ENHANCE TEXT
-// ======================================================
-
-export const enhanceText = async (req, res) => {
-  try {
-    const { text } = req.body;
-
-    const sendingText = text?.trim();
-
-    if (!sendingText) {
-      return res.status(400).json({
-        message: "Please provide the text",
-        success: false,
-      });
-    }
-
-    const response = await groq.chat.completions.create({
-      model: process.env.GROQ_MODEL,
-
-      messages: [
-        {
-          role: "system",
-          content:
-            "Summarize the following text into a concise, professional summary of 2–3 sentences. Highlight the person's key skills, achievements, and professional identity in a way that sounds polished and suitable for a resume or LinkedIn profile. Avoid repetition and keep the tone confident and formal.",
-        },
-        {
-          role: "user",
-          content: sendingText,
-        },
-      ],
-
-      temperature: 0.2,
-    });
-
-    const responseText = response.choices[0]?.message?.content;
-
-    console.log("GROQ RESPONSE:", responseText);
-
-    if (!responseText) {
-      return res.status(500).json({
-        message: "No response from Groq",
-        success: false,
-      });
-    }
-
-    return res.json({
-      success: true,
-      responseText,
-    });
-  } catch (error) {
-    console.error("Enhance text error:", error);
-
-    return res.status(error.status || 500).json({
-      message: error.message || "Failed to generate enhanced text",
-      success: false,
-    });
-  }
-};
-
-// ======================================================
-// UPLOAD PDF
-// → NORMAL TEXT EXTRACTION
-// → OCR FALLBACK
-// → GROQ
-// → PRISMA
-// ======================================================
-
 export const generateResume = async (req, res) => {
   try {
     // ==================================================
@@ -195,10 +14,14 @@ export const generateResume = async (req, res) => {
     }
 
     // ==================================================
-    // 2. TITLE
+    // 2. GET DATA FROM FRONTEND
     // ==================================================
 
-    const { title } = req.body;
+    const { title, text } = req.body;
+
+    // ==================================================
+    // 3. VALIDATE TITLE
+    // ==================================================
 
     if (!title?.trim()) {
       return res.status(400).json({
@@ -208,81 +31,32 @@ export const generateResume = async (req, res) => {
     }
 
     // ==================================================
-    // 3. FILE
+    // 4. VALIDATE EXTRACTED TEXT
     // ==================================================
 
-    if (!req.file) {
+    const fileText = text?.trim();
+
+    if (!fileText) {
       return res.status(400).json({
-        message: "Please upload a PDF file",
+        message: "Resume text is required",
         success: false,
       });
     }
 
-    const buffer = req.file.buffer;
-
-    console.log("=================================");
-    console.log("FILE NAME:", req.file.originalname);
-    console.log("FILE SIZE:", req.file.size);
-    console.log("FILE TYPE:", req.file.mimetype);
-    console.log("=================================");
-
-    // ==================================================
-    // 4. NORMAL PDF TEXT EXTRACTION
-    // ==================================================
-
-    let fileText = "";
-
-    try {
-      console.log("Trying normal PDF text extraction...");
-
-      const parser = new PDFParse({
-        data: buffer,
-      });
-
-      const result = await parser.getText();
-
-      await parser.destroy();
-
-      fileText = result.text?.trim() || "";
-
-      console.log("=================================");
-      console.log("NORMAL PDF TEXT LENGTH:", fileText.length);
-      console.log("NORMAL PDF TEXT:");
-      console.log(fileText);
-      console.log("=================================");
-    } catch (error) {
-      console.error("Normal PDF extraction failed:", error.message);
-    }
-
-    // ==================================================
-    // 5. OCR FALLBACK
-    // ==================================================
-
-    if (fileText.length < 100) {
-      console.log("Not enough text extracted. Switching to OCR...");
-
-      fileText = await extractTextWithOCR(buffer);
-
-      console.log("=================================");
-      console.log("FINAL OCR TEXT LENGTH:", fileText.length);
-      console.log("FINAL OCR TEXT:");
-      console.log(fileText);
-      console.log("=================================");
-    }
-
-    // ==================================================
-    // 6. CHECK FINAL TEXT
-    // ==================================================
-
-    if (!fileText || fileText.length < 20) {
+    if (fileText.length < 20) {
       return res.status(400).json({
-        message: "Could not extract readable text from this PDF.",
+        message: "Resume text is too short",
         success: false,
       });
     }
 
+    console.log("=================================");
+    console.log("RESUME TEXT RECEIVED");
+    console.log("TEXT LENGTH:", fileText.length);
+    console.log("=================================");
+
     // ==================================================
-    // 7. GROQ PROMPT
+    // 5. GROQ PROMPT
     // ==================================================
 
     const prompt = `
@@ -352,7 +126,7 @@ RULES:
 `;
 
     // ==================================================
-    // 8. SEND TO GROQ
+    // 6. SEND TEXT TO GROQ
     // ==================================================
 
     console.log("=================================");
@@ -382,7 +156,7 @@ RULES:
     });
 
     // ==================================================
-    // 9. GROQ OUTPUT
+    // 7. GET GROQ OUTPUT
     // ==================================================
 
     const output = response.choices[0]?.message?.content;
@@ -400,7 +174,7 @@ RULES:
     }
 
     // ==================================================
-    // 10. PARSE JSON
+    // 8. PARSE GROQ JSON
     // ==================================================
 
     let resumeEntries;
@@ -417,7 +191,7 @@ RULES:
     }
 
     // ==================================================
-    // 11. SAVE TO DATABASE
+    // 9. SAVE TO DATABASE
     // ==================================================
 
     const resume = await prisma.resume.create({
@@ -459,7 +233,7 @@ RULES:
     });
 
     // ==================================================
-    // 12. SUCCESS
+    // 10. SUCCESS
     // ==================================================
 
     console.log("=================================");
@@ -468,7 +242,7 @@ RULES:
     console.log("=================================");
 
     return res.status(201).json({
-      message: "Resume uploaded successfully",
+      message: "Resume generated successfully",
       success: true,
       resume,
     });
