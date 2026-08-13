@@ -286,31 +286,33 @@ export const uploadImage = async (req, res) => {
       "base64",
     )}`;
 
-    const transformationString =
-      "w-300,h-300,fo-face,z-0.75" + (removeBG ? ",e-bgremove" : "");
-
-    console.log("TRANSFORMATION:", transformationString);
-
+    // Upload ORIGINAL image
     const response = await imagekit.files.upload({
       file: base64File,
-
       fileName: `resume-${Date.now()}.png`,
-
       folder: "user_resumes",
-
-      transformation: {
-        pre: transformationString,
-      },
     });
 
-    console.log("IMAGE URL:", response.url);
+    console.log("ORIGINAL URL:", response.url);
+
+    let imageURL = response.url;
+
+    // ============================================
+    // REMOVE BACKGROUND
+    // ============================================
+
+    if (removeBG) {
+      imageURL = `${response.url}?tr=w-300,h-300,fo-face,z-0.75,e-bgremove`;
+
+      console.log("BACKGROUND REMOVED URL:", imageURL);
+    }
 
     return res.json({
       success: true,
       message: removeBG
         ? "Background removed successfully"
         : "Image uploaded successfully",
-      imageURL: response.url,
+      imageURL,
     });
   } catch (error) {
     console.error("IMAGE UPLOAD ERROR:", error);
