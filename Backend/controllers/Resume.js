@@ -263,32 +263,47 @@ export const updateSkills = async (req, res) => {
 };
 //---------------------For image url------------------------
 export const uploadImage = async (req, res) => {
-  const file = req.file;
-  const base64File = `data:${file.mimetype};base64,${file.buffer.toString(
-    "base64"
-  )}`;
-  console.log(base64File);
   try {
-    if (file) {
-      const response = await imagekit.files.upload({
-        file: base64File,
-        fileName: "resume.png",
-        folder: "user_resumes",
-        transformation: {
-          pre:
-            "w-300,h-300,fo-face,z-0.75" +
-            (req.body.removeBG === "true" ? ",e-bgremove" : ""),
-        },
-      });
+    const file = req.file;
 
-      return res.json({
-        message: "Added image",
-        success: true,
-        imageURL: response.url,
+    if (!file) {
+      return res.status(400).json({
+        success: false,
+        message: "Image is required",
       });
     }
+
+    const base64File = `data:${file.mimetype};base64,${file.buffer.toString(
+      "base64",
+    )}`;
+
+    const removeBG = req.body.removeBG === "true";
+
+    console.log("Remove BG:", removeBG);
+
+    const response = await imagekit.files.upload({
+      file: base64File,
+      fileName: `resume-${Date.now()}.png`,
+      folder: "user_resumes",
+
+      transformation: {
+        pre: "w-300,h-300,fo-face,z-0.75" + (removeBG ? ",e-bgremove" : ""),
+      },
+    });
+
+    return res.json({
+      message: removeBG
+        ? "Background removed successfully"
+        : "Image uploaded successfully",
+      success: true,
+      imageURL: response.url,
+    });
   } catch (error) {
-    console.log(error);
-    return res.json({ message: error.message });
+    console.error("Upload image error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

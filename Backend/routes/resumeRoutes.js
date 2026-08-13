@@ -37,5 +37,5 @@ resumeRoute.post(
   "/uploadImage",
   protectUserAuth,
   upload.single("image"),
-  uploadImage
+  uploadImage,
 );
