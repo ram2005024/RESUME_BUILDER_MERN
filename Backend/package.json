@@ -34,6 +34,7 @@
     "path": "^0.12.7",
     "pdf-parse": "^2.4.5",
     "pg": "^8.16.3",
+    "pdf-to-img": "^6.2.0",
     "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
