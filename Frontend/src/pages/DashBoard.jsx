@@ -76,7 +76,7 @@ const DashBoard = () => {
         { title, userID },
         {
           withCredentials: true,
-        }
+        },
       );
       if (!res.data.success) toast.error(res.data.message);
       await fetchResume();
@@ -91,7 +91,17 @@ const DashBoard = () => {
     e.preventDefault();
     try {
       setLoading(true);
+      console.log("FILE:", uploadFile);
+      console.log("FILE NAME:", uploadFile?.name);
+      console.log("FILE SIZE:", uploadFile?.size);
+      console.log("FILE TYPE:", uploadFile?.type);
+
       const textPDF = await pdfToText(uploadFile);
+
+      console.log("========== PDF RESULT ==========");
+      console.log("TEXT:", textPDF);
+      console.log("TEXT LENGTH:", textPDF?.length);
+      console.log("================================");
       console.log(textPDF);
       const res = await axios.post(
         import.meta.env.VITE_API_URL + "ai/generateResume",
@@ -101,7 +111,7 @@ const DashBoard = () => {
         },
         {
           withCredentials: true,
-        }
+        },
       );
       if (!res.data.success) {
         toast.error(res.data.message);
@@ -132,7 +142,7 @@ const DashBoard = () => {
         { title },
         {
           withCredentials: true,
-        }
+        },
       );
       setTitle("");
       setIsEditResume(false);
@@ -153,7 +163,7 @@ const DashBoard = () => {
           import.meta.env.VITE_API_URL + `resume/deleteResume/${resumeID}`,
           {
             withCredentials: true,
-          }
+          },
         );
         if (!res.data.success) return toast.error(res.data.message);
         await fetchResume();
