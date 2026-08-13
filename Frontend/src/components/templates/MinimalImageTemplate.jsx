@@ -40,7 +40,7 @@ const MinimalImageTemplate = ({ data, accentColor }) => {
         {/* Name + Title */}
         <div className="col-span-2 flex flex-col justify-center py-10 px-8">
           <h1 className="text-4xl font-bold text-zinc-700 tracking-widest">
-            {data.personal_info?.full_name || "Your Name"}
+            {data.personal_info?.name || "Your Name"}
           </h1>
           <p className="uppercase text-zinc-600 font-medium text-sm tracking-widest">
             {data?.personal_info?.profession || "Profession"}

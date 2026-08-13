@@ -14,7 +14,7 @@ const MinimalTemplate = ({ data, accentColor }) => {
             {/* Header */}
             <header className="mb-10">
                 <h1 className="text-4xl font-thin mb-4 tracking-wide">
-                    {data.personal_info?.full_name || "Your Name"}
+                    {data.personal_info?.name || "Your Name"}
                 </h1>
 
                 <div className="flex flex-wrap gap-6 text-sm text-gray-600">
