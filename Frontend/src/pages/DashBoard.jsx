@@ -16,6 +16,7 @@ import axios from "axios";
 import { userContext } from "../context/UserContext.jsx";
 import { toast } from "react-toastify";
 import pdfToText from "react-pdftotext";
+import { extractTextFromPDF } from "../utils/pdfToText.js";
 const DashBoard = () => {
   const {
     userID,
@@ -92,15 +93,14 @@ const DashBoard = () => {
 
     try {
       setLoading(true);
-
-      const formData = new FormData();
-
-      formData.append("title", title);
-      formData.append("file", uploadFile);
-
+      const extractedText = await extractTextFromPDF(uploadFile);
+      console.log("Extracted text is ========", extractedText);
       const res = await axios.post(
         import.meta.env.VITE_API_URL + "ai/generateResume",
-        formData,
+        {
+          text: extractedText,
+          title: title,
+        },
         {
           withCredentials: true,
         },
