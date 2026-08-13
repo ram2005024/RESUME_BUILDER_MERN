@@ -267,9 +267,9 @@ export const uploadImage = async (req, res) => {
     const file = req.file;
 
     if (!file) {
-      return res.status(400).json({
+      return res.json({
         success: false,
-        message: "Image is required",
+        message: "No image uploaded",
       });
     }
 
@@ -279,7 +279,7 @@ export const uploadImage = async (req, res) => {
 
     const removeBG = req.body.removeBG === "true";
 
-    console.log("Remove BG:", removeBG);
+    console.log("REMOVE BG:", removeBG);
 
     const response = await imagekit.files.upload({
       file: base64File,
@@ -287,24 +287,22 @@ export const uploadImage = async (req, res) => {
       folder: "user_resumes",
 
       transformation: {
-        pre:
-          "w-300,h-300,fo-face,z-0.75" +
-          (req.body.removeBG === "true" ? ",e-bgremove" : ""),
+        pre: "w-300,h-300,fo-face,z-0.75" + (removeBG ? ",e-bgremove" : ""),
         post: "f-png",
       },
     });
 
+    console.log("IMAGE URL:", response.url);
+
     return res.json({
-      message: removeBG
-        ? "Background removed successfully"
-        : "Image uploaded successfully",
       success: true,
+      message: removeBG ? "Background removed" : "Image uploaded",
       imageURL: response.url,
     });
   } catch (error) {
-    console.error("Upload image error:", error);
+    console.error("IMAGE UPLOAD ERROR:", error);
 
-    return res.status(500).json({
+    return res.json({
       success: false,
       message: error.message,
     });
