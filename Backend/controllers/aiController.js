@@ -1,22 +1,27 @@
 import { prisma } from "../config/dbConfig.js";
-import { openai } from "../config/OpenAi.js";
+import { groq } from "../config/Groq.js";
 import { PDFParse } from "pdf-parse";
 
-//------ Enhance text using OpenAI
+// ======================================================
+// ENHANCE TEXT
+// ======================================================
+
 export const enhanceText = async (req, res) => {
   try {
     const { text } = req.body;
+
     const sendingText = text?.trim();
 
     if (!sendingText) {
-      return res.json({
+      return res.status(400).json({
         message: "Please provide the text",
         success: false,
       });
     }
 
-    const response = await openai.chat.completions.create({
-      model: process.env.OPEN_AI_MODEL,
+    const response = await groq.chat.completions.create({
+      model: process.env.GROQ_MODEL,
+
       messages: [
         {
           role: "system",
@@ -28,16 +33,18 @@ export const enhanceText = async (req, res) => {
           content: sendingText,
         },
       ],
+
+      temperature: 0.2,
     });
 
-    const responseText = response.choices[0].message.content;
+    const responseText = response.choices[0]?.message?.content;
 
-    console.log(responseText);
+    console.log("GROQ RESPONSE:", responseText);
 
     if (!responseText) {
-      return res.json({
+      return res.status(500).json({
+        message: "No response from Groq",
         success: false,
-        message: "No response from OpenAI",
       });
     }
 
@@ -48,20 +55,25 @@ export const enhanceText = async (req, res) => {
   } catch (error) {
     console.error("Enhance text error:", error);
 
-    return res.json({
-      message: "Failed to generate the enhanced text",
+    return res.status(error.status || 500).json({
+      message: error.message || "Failed to generate enhanced text",
       success: false,
     });
   }
 };
 
-//------ Upload PDF → Extract text → OpenAI → Create Resume
+// ======================================================
+// UPLOAD PDF → EXTRACT TEXT → GROQ → CREATE RESUME
+// ======================================================
+
 export const generateResume = async (req, res) => {
   try {
-    const userID = req.userID;
-    const { title } = req.body;
+    // --------------------------------------------------
+    // 1. AUTHENTICATION
+    // --------------------------------------------------
 
-    // Check authentication
+    const userID = req.userID;
+
     if (!userID) {
       return res.status(401).json({
         message: "Please login first",
@@ -69,26 +81,44 @@ export const generateResume = async (req, res) => {
       });
     }
 
-    // Check title
+    // --------------------------------------------------
+    // 2. GET TITLE
+    // --------------------------------------------------
+
+    const { title } = req.body;
+
     if (!title?.trim()) {
-      return res.json({
+      return res.status(400).json({
         message: "Resume title is required",
         success: false,
       });
     }
 
-    // Check uploaded file
+    // --------------------------------------------------
+    // 3. CHECK FILE
+    // --------------------------------------------------
+
     if (!req.file) {
-      return res.json({
+      return res.status(400).json({
         message: "Please upload a PDF file",
         success: false,
       });
     }
 
-    // Get PDF buffer
+    // --------------------------------------------------
+    // 4. GET PDF BUFFER
+    // --------------------------------------------------
+
     const buffer = req.file.buffer;
 
-    // Extract text from PDF
+    console.log("FILE NAME:", req.file.originalname);
+    console.log("FILE SIZE:", req.file.size);
+    console.log("FILE TYPE:", req.file.mimetype);
+
+    // --------------------------------------------------
+    // 5. EXTRACT PDF TEXT
+    // --------------------------------------------------
+
     const parser = new PDFParse({
       data: buffer,
     });
@@ -99,24 +129,34 @@ export const generateResume = async (req, res) => {
 
     const fileText = result.text?.trim();
 
-    console.log("FILE NAME:", req.file.originalname);
-    console.log("EXTRACTED TEXT:", fileText);
+    console.log("========== PDF RESULT ==========");
     console.log("TEXT LENGTH:", fileText?.length);
+    console.log("TEXT:", fileText);
+    console.log("================================");
 
-    // Make sure PDF contains text
+    // --------------------------------------------------
+    // 6. CHECK EXTRACTED TEXT
+    // --------------------------------------------------
+
     if (!fileText) {
-      return res.json({
+      return res.status(400).json({
         message:
           "Could not extract text from this PDF. Please upload a text-based PDF.",
         success: false,
       });
     }
 
-    // Prompt for OpenAI
-    const prompt = `
-I have extracted the text from a PDF resume.
+    // --------------------------------------------------
+    // 7. PROMPT
+    // --------------------------------------------------
 
-Convert the provided resume text into structured JSON using exactly this structure:
+    const prompt = `
+You are a professional resume parser.
+
+Extract information from the provided resume text and return
+ONLY valid JSON.
+
+Use EXACTLY this structure:
 
 {
   "professional_summary": "",
@@ -155,18 +195,32 @@ Convert the provided resume text into structured JSON using exactly this structu
   ]
 }
 
-Rules:
-- Return ONLY valid JSON.
-- Do not include markdown.
-- If information is missing, use an empty string or empty array.
-- Do not invent information.
-- Dates must be valid ISO date strings if a date is actually available.
-- If a date is unavailable, use an empty string.
+RULES:
+
+1. Return ONLY valid JSON.
+2. Do not return markdown.
+3. Do not return explanations.
+4. Do not invent information.
+5. If information is missing, use an empty string.
+6. If an array has no information, return [].
+7. skills must be an array of strings.
+8. education must be an array.
+9. experience must be an array.
+10. project must be an array.
+11. is_current must be true or false.
+12. Preserve the actual information from the resume.
+13. Do not hallucinate dates, companies, skills, or education.
 `;
 
-    // Send extracted text to OpenAI
-    const response = await openai.chat.completions.create({
-      model: process.env.OPEN_AI_MODEL,
+    // --------------------------------------------------
+    // 8. SEND TO GROQ
+    // --------------------------------------------------
+
+    console.log("Sending resume text to Groq...");
+
+    const response = await groq.chat.completions.create({
+      model: process.env.GROQ_MODEL,
+
       messages: [
         {
           role: "system",
@@ -177,30 +231,56 @@ Rules:
           content: fileText,
         },
       ],
+
+      temperature: 0.1,
+
       response_format: {
         type: "json_object",
       },
-      temperature: 0.1,
     });
 
-    const output = response.choices[0].message.content;
+    // --------------------------------------------------
+    // 9. GET GROQ RESPONSE
+    // --------------------------------------------------
 
-    console.log("OPENAI OUTPUT:", output);
+    const output = response.choices[0]?.message?.content;
+
+    console.log("========== GROQ OUTPUT ==========");
+    console.log(output);
+    console.log("=================================");
 
     if (!output) {
-      return res.json({
-        message: "OpenAI did not return any response",
+      return res.status(500).json({
+        message: "Groq did not return any response",
         success: false,
       });
     }
 
-    // Convert JSON string → JavaScript object
-    const resumeEntries = JSON.parse(output);
+    // --------------------------------------------------
+    // 10. JSON STRING → JAVASCRIPT OBJECT
+    // --------------------------------------------------
 
-    // Create resume in database
+    let resumeEntries;
+
+    try {
+      resumeEntries = JSON.parse(output);
+    } catch (error) {
+      console.error("Invalid JSON returned by Groq:", output);
+
+      return res.status(500).json({
+        message: "Groq returned invalid JSON",
+        success: false,
+      });
+    }
+
+    // --------------------------------------------------
+    // 11. CREATE RESUME
+    // --------------------------------------------------
+
     const resume = await prisma.resume.create({
       data: {
         userID,
+
         title: title.trim(),
 
         skills: resumeEntries.skills ?? [],
@@ -209,27 +289,34 @@ Rules:
 
         personal_info: resumeEntries.personal_info ?? {},
 
-        experience: resumeEntries.experience?.length
-          ? {
-              create: resumeEntries.experience,
-            }
-          : undefined,
+        experience:
+          resumeEntries.experience?.length > 0
+            ? {
+                create: resumeEntries.experience,
+              }
+            : undefined,
 
-        project: resumeEntries.project?.length
-          ? {
-              create: resumeEntries.project,
-            }
-          : undefined,
+        project:
+          resumeEntries.project?.length > 0
+            ? {
+                create: resumeEntries.project,
+              }
+            : undefined,
 
-        education: resumeEntries.education?.length
-          ? {
-              create: resumeEntries.education,
-            }
-          : undefined,
+        education:
+          resumeEntries.education?.length > 0
+            ? {
+                create: resumeEntries.education,
+              }
+            : undefined,
       },
     });
 
-    return res.json({
+    // --------------------------------------------------
+    // 12. SUCCESS
+    // --------------------------------------------------
+
+    return res.status(201).json({
       message: "Resume uploaded successfully",
       success: true,
       resume,
@@ -237,7 +324,7 @@ Rules:
   } catch (error) {
     console.error("Generate resume error:", error);
 
-    return res.status(500).json({
+    return res.status(error.status || 500).json({
       message: error.message || "Failed to generate resume",
       success: false,
     });

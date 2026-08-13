@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google/genai": "^2.17.0",
     "@imagekit/nodejs": "^7.1.1",
     "@prisma/client": "^6.3.1",
     "bcryptjs": "^3.0.3",
@@ -20,6 +21,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "fs": "^0.0.1-security",
+    "groq-sdk": "^1.5.0",
     "imagekit": "^6.0.0",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",
