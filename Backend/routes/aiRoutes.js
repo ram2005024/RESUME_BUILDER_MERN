@@ -1,7 +1,7 @@
 import express from "express";
 import { protectUserAuth } from "../middlewares/protect.js";
 import { enhanceText, generateResume } from "../controllers/aiController.js";
-import { upload } from "./../config/multer";
+import { upload } from "./../config/multer.js";
 export const aiRoute = express.Router();
 aiRoute.post("/enhanceText", protectUserAuth, enhanceText);
 aiRoute.post(
