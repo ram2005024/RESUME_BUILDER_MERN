@@ -1,6 +1,58 @@
 import { prisma } from "../config/dbConfig.js";
 import { groq } from "../config/Groq.js";
 import { PDFParse } from "pdf-parse";
+import { pdf } from "pdf-to-img";
+import { createWorker } from "tesseract.js";
+
+// ======================================================
+// OCR FALLBACK
+// PDF → IMAGE → OCR → TEXT
+// ======================================================
+
+const extractTextWithOCR = async (buffer) => {
+  console.log("=================================");
+  console.log("TEXT EXTRACTION FAILED");
+  console.log("STARTING OCR...");
+  console.log("=================================");
+
+  const worker = await createWorker("eng");
+
+  let extractedText = "";
+
+  try {
+    // Convert PDF buffer into PDF pages
+    const document = await pdf(buffer);
+
+    let pageNumber = 0;
+
+    // pdf-to-img gives us each page as an image
+    for await (const page of document) {
+      pageNumber++;
+
+      console.log(`OCR PROCESSING PAGE ${pageNumber}...`);
+
+      // Convert page into Buffer
+      const imageBuffer = Buffer.from(page);
+
+      // OCR the page
+      const {
+        data: { text },
+      } = await worker.recognize(imageBuffer);
+
+      extractedText += text + "\n";
+
+      console.log(`PAGE ${pageNumber} OCR TEXT LENGTH: ${text?.length || 0}`);
+    }
+
+    return extractedText.trim();
+  } finally {
+    await worker.terminate();
+
+    console.log("=================================");
+    console.log("OCR FINISHED");
+    console.log("=================================");
+  }
+};
 
 // ======================================================
 // ENHANCE TEXT
@@ -63,7 +115,7 @@ export const enhanceText = async (req, res) => {
 };
 
 // ======================================================
-// UPLOAD PDF → EXTRACT TEXT → GROQ → CREATE RESUME
+// UPLOAD PDF → TEXT/OCR → GROQ → CREATE RESUME
 // ======================================================
 
 export const generateResume = async (req, res) => {
@@ -82,7 +134,7 @@ export const generateResume = async (req, res) => {
     }
 
     // --------------------------------------------------
-    // 2. GET TITLE
+    // 2. TITLE
     // --------------------------------------------------
 
     const { title } = req.body;
@@ -95,7 +147,7 @@ export const generateResume = async (req, res) => {
     }
 
     // --------------------------------------------------
-    // 3. CHECK FILE
+    // 3. FILE
     // --------------------------------------------------
 
     if (!req.file) {
@@ -105,49 +157,71 @@ export const generateResume = async (req, res) => {
       });
     }
 
-    // --------------------------------------------------
-    // 4. GET PDF BUFFER
-    // --------------------------------------------------
-
     const buffer = req.file.buffer;
 
+    console.log("=================================");
     console.log("FILE NAME:", req.file.originalname);
     console.log("FILE SIZE:", req.file.size);
     console.log("FILE TYPE:", req.file.mimetype);
+    console.log("=================================");
 
     // --------------------------------------------------
-    // 5. EXTRACT PDF TEXT
+    // 4. TRY NORMAL PDF TEXT EXTRACTION FIRST
     // --------------------------------------------------
 
-    const parser = new PDFParse({
-      data: buffer,
-    });
+    let fileText = "";
 
-    const result = await parser.getText();
+    try {
+      console.log("Trying normal PDF text extraction...");
 
-    await parser.destroy();
+      const parser = new PDFParse({
+        data: buffer,
+      });
 
-    const fileText = result.text?.trim();
+      const result = await parser.getText();
 
-    console.log("========== PDF RESULT ==========");
-    console.log("TEXT LENGTH:", fileText?.length);
-    console.log("TEXT:", fileText);
-    console.log("================================");
+      await parser.destroy();
+
+      fileText = result.text?.trim() || "";
+
+      console.log("NORMAL PDF TEXT LENGTH:", fileText.length);
+      console.log("NORMAL PDF TEXT:", fileText);
+    } catch (error) {
+      console.error("Normal PDF extraction failed:", error.message);
+    }
 
     // --------------------------------------------------
-    // 6. CHECK EXTRACTED TEXT
+    // 5. OCR FALLBACK
     // --------------------------------------------------
 
-    if (!fileText) {
+    // If PDF parser doesn't find meaningful text,
+    // use OCR.
+
+    if (fileText.length < 100) {
+      console.log("Not enough text extracted. Switching to OCR...");
+
+      fileText = await extractTextWithOCR(buffer);
+
+      console.log("=================================");
+      console.log("FINAL OCR TEXT LENGTH:", fileText.length);
+      console.log("FINAL OCR TEXT:");
+      console.log(fileText);
+      console.log("=================================");
+    }
+
+    // --------------------------------------------------
+    // 6. STILL NO TEXT?
+    // --------------------------------------------------
+
+    if (!fileText || fileText.length < 20) {
       return res.status(400).json({
-        message:
-          "Could not extract text from this PDF. Please upload a text-based PDF.",
+        message: "Could not extract readable text from this PDF.",
         success: false,
       });
     }
 
     // --------------------------------------------------
-    // 7. PROMPT
+    // 7. GROQ PROMPT
     // --------------------------------------------------
 
     const prompt = `
@@ -216,7 +290,9 @@ RULES:
     // 8. SEND TO GROQ
     // --------------------------------------------------
 
-    console.log("Sending resume text to Groq...");
+    console.log("=================================");
+    console.log("SENDING RESUME TEXT TO GROQ...");
+    console.log("=================================");
 
     const response = await groq.chat.completions.create({
       model: process.env.GROQ_MODEL,
@@ -240,12 +316,13 @@ RULES:
     });
 
     // --------------------------------------------------
-    // 9. GET GROQ RESPONSE
+    // 9. GROQ OUTPUT
     // --------------------------------------------------
 
     const output = response.choices[0]?.message?.content;
 
-    console.log("========== GROQ OUTPUT ==========");
+    console.log("=================================");
+    console.log("GROQ OUTPUT:");
     console.log(output);
     console.log("=================================");
 
@@ -257,7 +334,7 @@ RULES:
     }
 
     // --------------------------------------------------
-    // 10. JSON STRING → JAVASCRIPT OBJECT
+    // 10. PARSE JSON
     // --------------------------------------------------
 
     let resumeEntries;
@@ -274,7 +351,7 @@ RULES:
     }
 
     // --------------------------------------------------
-    // 11. CREATE RESUME
+    // 11. SAVE TO DATABASE
     // --------------------------------------------------
 
     const resume = await prisma.resume.create({
