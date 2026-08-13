@@ -98,6 +98,13 @@ const DashBoard = () => {
 
       const textPDF = await pdfToText(uploadFile);
 
+      console.log("TEXT:", textPDF);
+      console.log("LENGTH:", textPDF.length);
+
+      if (!textPDF.trim()) {
+        toast.error("No text could be extracted from this PDF");
+        return;
+      }
       console.log("========== PDF RESULT ==========");
       console.log("TEXT:", textPDF);
       console.log("TEXT LENGTH:", textPDF?.length);
